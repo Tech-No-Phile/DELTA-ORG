@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Data Engineering Academy — Admin Console</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg-deep:#0A0E14;
+  --bg-surface:#10141D;
+  --bg-glass:rgba(22,28,40,0.6);
+  --bg-glass-hover:rgba(28,35,50,0.8);
+  --border:#212A3A;
+  --border-soft:#1A2230;
+  --text-primary:#E9ECF3;
+  --text-secondary:#8891A5;
+  --text-tertiary:#5C6478;
+  --accent-flow:#4C8DFF;
+  --accent-flow-dim:rgba(76,141,255,0.15);
+  --accent-amber:#F0A94E;
+  --accent-amber-dim:rgba(240,169,78,0.15);
+  --accent-green:#3ECF8E;
+  --accent-green-dim:rgba(62,207,142,0.15);
+  --accent-red:#F0556B;
+  --accent-red-dim:rgba(240,85,107,0.15);
+  --accent-violet:#9D7BFF;
+  --accent-violet-dim:rgba(157,123,255,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg-deep);
+  color:var(--text-primary);
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  line-height:1.5;
+  min-height:100vh;
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(76,141,255,0.06), transparent 40%),
+    radial-gradient(circle at 85% 100%, rgba(157,123,255,0.05), transparent 40%);
+}
+.mono{font-family:'JetBrains Mono',monospace;}
+.display{font-family:'Space Grotesk',sans-serif;}
+
+/* ---------- LAYOUT ---------- */
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{
+  border-right:1px solid var(--border-soft);
+  padding:22px 14px;
+  display:flex;flex-direction:column;
+  background:linear-gradient(180deg, rgba(16,20,29,0.9), rgba(10,14,20,0.9));
+}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 24px;}
+.brand-mark{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent-flow),var(--accent-violet));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk';font-weight:700;font-size:14px;color:#fff;
+}
+.brand-name{font-family:'Space Grotesk';font-weight:600;font-size:14.5px;letter-spacing:-0.01em;}
+.brand-sub{font-size:10.5px;color:var(--text-tertiary);margin-top:1px;}
+
+.nav-section-label{
+  font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;
+  color:var(--text-tertiary);padding:14px 10px 6px;font-weight:600;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:8px;
+  color:var(--text-secondary);font-size:13.5px;font-weight:500;
+  cursor:pointer;transition:all .15s ease;
+  border:1px solid transparent;
+}
+.nav-item:hover{background:var(--bg-glass);color:var(--text-primary);}
+.nav-item.active{
+  background:var(--accent-flow-dim);
+  color:var(--accent-flow);
+  border-color:rgba(76,141,255,0.25);
+}
+.nav-icon{width:16px;height:16px;flex-shrink:0;opacity:0.9;}
+.nav-badge{
+  margin-left:auto;font-size:10px;font-family:'JetBrains Mono';
+  background:var(--accent-red-dim);color:var(--accent-red);
+  padding:1px 6px;border-radius:20px;
+}
+.sidebar-footer{
+  margin-top:auto;padding:12px 10px;border-top:1px solid var(--border-soft);
+  display:flex;align-items:center;gap:10px;
+}
+.avatar{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,#2A3346,#1A2130);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk';font-size:12px;font-weight:600;color:var(--text-secondary);
+  border:1px solid var(--border);
+}
+.sidebar-footer-name{font-size:12.5px;font-weight:600;}
+.sidebar-footer-role{font-size:10.5px;color:var(--text-tertiary);}
+
+/* MAIN */
+.main{display:flex;flex-direction:column;min-height:100vh;}
+.topbar{
+  height:60px;border-bottom:1px solid var(--border-soft);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;flex-shrink:0;
+  background:rgba(10,14,20,0.7);backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:10;
+}
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg-surface);border:1px solid var(--border);
+  border-radius:8px;padding:7px 12px;width:320px;color:var(--text-tertiary);font-size:13px;
+}
+.topbar-actions{display:flex;align-items:center;gap:12px;}
+.btn{
+  font-family:'Inter';font-weight:600;font-size:13px;
+  padding:8px 14px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--border);background:var(--bg-surface);color:var(--text-primary);
+  display:flex;align-items:center;gap:6px;transition:all .15s;
+}
+.btn:hover{background:var(--bg-glass-hover);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent-flow),#3A6FE0);
+  border:none;color:#fff;
+  box-shadow:0 4px 14px rgba(76,141,255,0.25);
+}
+.btn-primary:hover{filter:brightness(1.08);}
+.icon-btn{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--text-secondary);
+  cursor:pointer;background:var(--bg-surface);position:relative;
+}
+.icon-btn:hover{color:var(--text-primary);background:var(--bg-glass-hover);}
+.dot-alert{
+  position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;
+  background:var(--accent-red);box-shadow:0 0 0 2px var(--bg-surface);
+}
+
+.content{padding:26px 28px 60px;flex:1;}
+.view{display:none;animation:fadeIn .25s ease;}
+.view.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;}
+.page-title{font-family:'Space Grotesk';font-size:22px;font-weight:600;letter-spacing:-0.01em;}
+.page-sub{color:var(--text-secondary);font-size:13px;margin-top:4px;}
+
+/* CARDS */
+.card{
+  background:var(--bg-glass);
+  border:1px solid var(--border-soft);
+  border-radius:14px;
+  padding:18px;
+  backdrop-filter:blur(10px);
+}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+.stat-card{position:relative;overflow:hidden;}
+.stat-label{font-size:12px;color:var(--text-secondary);font-weight:500;}
+.stat-value{font-family:'Space Grotesk';font-size:28px;font-weight:600;margin-top:8px;letter-spacing:-0.02em;}
+.stat-delta{font-size:11.5px;margin-top:6px;font-family:'JetBrains Mono';}
+.stat-delta.up{color:var(--accent-green);}
+.stat-delta.down{color:var(--accent-red);}
+.stat-delta.warn{color:var(--accent-amber);}
+
+/* PIPELINE / DAG SIGNATURE ELEMENT */
+.pipeline-row{
+  display:flex;align-items:stretch;gap:0;margin:22px 0 26px;position:relative;
+}
+.pipeline-node{
+  flex:1;background:var(--bg-glass);border:1px solid var(--border-soft);
+  border-radius:12px;padding:16px 18px;position:relative;z-index:2;
+}
+.pipeline-node.risk{border-color:rgba(240,169,78,0.4);}
+.pipeline-connector{
+  flex:0 0 40px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;
+}
+.pipeline-connector svg{width:100%;height:2px;overflow:visible;}
+.pipeline-phase-label{font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);font-weight:600;}
+.pipeline-phase-name{font-family:'Space Grotesk';font-weight:600;font-size:14.5px;margin-top:6px;}
+.pipeline-phase-meta{display:flex;justify-content:space-between;align-items:center;margin-top:12px;}
+.progress-track{flex:1;height:5px;background:var(--bg-surface);border-radius:10px;overflow:hidden;margin-right:10px;}
+.progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent-flow),#7AB2FF);}
+.progress-fill.amber{background:linear-gradient(90deg,var(--accent-amber),#FFC98A);}
+
+/* BADGES */
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:'JetBrains Mono';
+}
+.badge.green{background:var(--accent-green-dim);color:var(--accent-green);}
+.badge.amber{background:var(--accent-amber-dim);color:var(--accent-amber);}
+.badge.red{background:var(--accent-red-dim);color:var(--accent-red);}
+.badge.blue{background:var(--accent-flow-dim);color:var(--accent-flow);}
+.badge.violet{background:var(--accent-violet-dim);color:var(--accent-violet);}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+/* AI INSIGHTS */
+.ai-panel{border:1px solid rgba(157,123,255,0.25);background:linear-gradient(180deg, rgba(157,123,255,0.06), transparent);}
+.ai-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.ai-spark{width:22px;height:22px;border-radius:6px;background:var(--accent-violet-dim);display:flex;align-items:center;justify-content:center;color:var(--accent-violet);}
+.ai-title{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
+.ai-item{
+  padding:11px 12px;border-radius:9px;background:var(--bg-surface);
+  border:1px solid var(--border-soft);margin-bottom:8px;font-size:12.5px;color:var(--text-secondary);
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+.ai-item b{color:var(--text-primary);font-weight:600;}
+.ai-action{font-size:11px;color:var(--accent-violet);font-weight:600;white-space:nowrap;cursor:pointer;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;}
+th{
+  text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;
+  color:var(--text-tertiary);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--border-soft);
+}
+td{padding:12px 14px;border-bottom:1px solid var(--border-soft);font-size:13px;}
+tr:last-child td{border-bottom:none;}
+tr.trainee-row:hover{background:var(--bg-glass);cursor:pointer;}
+.trainee-name-cell{display:flex;align-items:center;gap:10px;}
+.trainee-info-name{font-weight:600;font-size:13px;}
+.trainee-info-dept{font-size:11.5px;color:var(--text-tertiary);}
+.skill-score{font-family:'JetBrains Mono';font-weight:600;}
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.chip{
+  padding:7px 13px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg-surface);font-size:12.5px;color:var(--text-secondary);cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+}
+.chip.active{border-color:var(--accent-flow);color:var(--accent-flow);background:var(--accent-flow-dim);}
+
+/* KANBAN */
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:18px;}
+.kanban-col{background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:12px;padding:12px;min-height:200px;}
+.kanban-col-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 2px;}
+.kanban-col-title{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);}
+.kanban-count{font-family:'JetBrains Mono';font-size:11px;color:var(--text-tertiary);background:var(--bg-glass);padding:1px 7px;border-radius:20px;}
+.kanban-card{
+  background:var(--bg-glass);border:1px solid var(--border-soft);border-radius:9px;
+  padding:11px 12px;margin-bottom:10px;cursor:pointer;transition:border-color .15s;
+}
+.kanban-card:hover{border-color:var(--accent-flow);}
+.kanban-card-title{font-size:12.5px;font-weight:600;margin-bottom:8px;line-height:1.35;}
+.kanban-card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px;}
+.tag{font-size:10px;padding:2px 7px;border-radius:5px;background:var(--bg-deep);color:var(--text-tertiary);border:1px solid var(--border-soft);}
+.kanban-card-foot{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-tertiary);}
+.mini-avatars{display:flex;}
+.mini-avatar{width:18px;height:18px;border-radius:5px;background:#232B3E;border:2px solid var(--bg-glass);margin-left:-6px;}
+.mini-avatar:first-child{margin-left:0;}
+
+/* HEATMAP */
+.heatmap{display:grid;grid-template-columns:140px repeat(6,1fr);gap:4px;margin-top:18px;}
+.heatmap-label{font-size:11.5px;color:var(--text-secondary);display:flex;align-items:center;padding:8px 4px;font-weight:500;}
+.heatmap-col-label{font-size:10.5px;color:var(--text-tertiary);text-align:center;padding-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;}
+.heat-cell{
+  aspect-ratio:2/1;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono';font-size:11px;font-weight:600;color:#fff;cursor:default;
+}
+
+/* MODAL */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(6,8,12,0.7);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:100;
+}
+.modal-overlay.active{display:flex;}
+.modal{
+  width:560px;max-height:86vh;overflow-y:auto;
+  background:#12161F;border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-family:'Space Grotesk';font-weight:600;font-size:16px;}
+.modal-close{cursor:pointer;color:var(--text-tertiary);font-size:18px;line-height:1;}
+.modal-body{padding:20px 22px;}
+.step-indicator{display:flex;gap:6px;margin-bottom:20px;}
+.step-dot{flex:1;height:3px;border-radius:3px;background:var(--border);}
+.step-dot.done{background:var(--accent-flow);}
+.form-group{margin-bottom:16px;}
+.form-label{font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:7px;display:block;}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--bg-surface);border:1px solid var(--border);
+  border-radius:8px;padding:9px 12px;color:var(--text-primary);font-size:13px;font-family:'Inter';
+}
+.form-textarea{min-height:70px;resize:vertical;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pill-select{display:flex;gap:8px;flex-wrap:wrap;}
+.pill-option{
+  padding:7px 13px;border-radius:20px;border:1px solid var(--border);
+  font-size:12px;color:var(--text-secondary);cursor:pointer;background:var(--bg-surface);
+}
+.pill-option.selected{border-color:var(--accent-flow);color:var(--accent-flow);background:var(--accent-flow-dim);}
+.modal-foot{padding:16px 22px;border-top:1px solid var(--border-soft);display:flex;justify-content:flex-end;gap:10px;}
+
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">DE</div>
+      <div>
+        <div class="brand-name">Academy Console</div>
+        <div class="brand-sub">Admin workspace</div>
+      </div>
+    </div>
+
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" data-view="dashboard">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-view="trainees">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.8-6 6-6s6 2.5 6 6"/><circle cx="17" cy="8.5" r="2.6"/><path d="M15.5 14.2c2.6.3 4.5 2.6 4.5 5.8"/></svg>
+      Trainees <span class="nav-badge">12</span>
+    </div>
+    <div class="nav-item" data-view="assignments">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+      Assignments
+    </div>
+    <div class="nav-item" data-view="analytics">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M11 20V4M18 20v-7"/></svg>
+      Analytics
+    </div>
+    <div class="nav-item" data-view="heatmap">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Skill Heatmap
+    </div>
+
+    <div class="nav-section-label">Program</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"/></svg>Curriculum</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Mentors</div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 2 8 3.6v6.1c0 5-3.4 8.3-8 10.3-4.6-2-8-5.3-8-10.3V5.6L12 2Z"/></svg>Certifications <span class="nav-badge">4</span></div>
+    <div class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9c.2.6.7 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"/></svg>Settings</div>
+
+    <div class="sidebar-footer">
+      <div class="avatar">AR</div>
+      <div>
+        <div class="sidebar-footer-name">Aisha Rahman</div>
+        <div class="sidebar-footer-role">Program Admin</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        Search trainees, assignments, cohorts…
+      </div>
+      <div class="topbar-actions">
+        <button class="btn" id="openCreateBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New Assignment</button>
+        <div class="icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot-alert"></span></div>
+        <div class="avatar">AR</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ============ DASHBOARD VIEW ============ -->
+      <div class="view active" id="view-dashboard">
+        <div class="page-head">
+          <div>
+            <div class="page-title">Program Overview</div>
+            <div class="page-sub">Cohort 14 · Week 6 of 16 · Last synced 4 minutes ago</div>
+          </div>
+        </div>
+
+        <div class="grid-4">
+          <div class="card stat-card">
+            <div class="stat-label">Active Trainees</div>
+            <div class="stat-value">128</div>
+            <div class="stat-delta up">↑ 6 new this week</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-label">Avg. Completion</div>
+            <div class="stat-value">67%</div>
+            <div class="stat-delta up">↑ 3.2% vs last week</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-label">At Risk</div>
+            <div class="stat-value">14</div>
+            <div class="stat-delta warn">⚠ Kafka module bottleneck</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-label">Pending Approvals</div>
+            <div class="stat-value">7</div>
+            <div class="stat-delta">4 capstones, 3 certifications</div>
+          </div>
+        </div>
+
+        <!-- SIGNATURE PIPELINE ELEMENT -->
+        <div class="pipeline-row">
+          <div class="pipeline-node">
+            <div class="pipeline-phase-label">Phase 01</div>
+            <div class="pipeline-phase-name">Foundations</div>
+            <div class="pipeline-phase-meta"><div class="progress-track"><div class="progress-fill" style="width:100%"></div></div><span class="mono">100%</span></div>
+          </div>
+          <div class="pipeline-connector"><svg><line x1="0" y1="1" x2="100%" y2="1" stroke="#2B3548" stroke-width="2" stroke-dasharray="4 4"/></svg></div>
+          <div class="pipeline-node">
+            <div class="pipeline-phase-label">Phase 02</div>
+            <div class="pipeline-phase-name">Warehousing &amp; ETL</div>
+            <div class="pipeline-phase-meta"><div class="progress-track"><div class="progress-fill" style="width:88%"></div></div><span class="mono">88%</span></div>
+          </div>
+          <div class="pipeline-connector"><svg><line x1="0" y1="1" x2="100%" y2="1" stroke="#2B3548" stroke-width="2" stroke-dasharray="4 4"/></svg></div>
+          <div class="pipeline-node risk">
+            <div class="pipeline-phase-label">Phase 03</div>
+            <div class="pipeline-phase-name">Distributed Systems</div>
+            <div class="pipeline-phase-meta"><div class="progress-track"><div class="progress-fill amber" style="width:41%"></div></div><span class="mono">41%</span></div>
+          </div>
+          <div class="pipeline-connector"><svg><line x1="0" y1="1" x2="100%" y2="1" stroke="#2B3548" stroke-width="2" stroke-dasharray="4 4"/></svg></div>
+          <div class="pipeline-node">
+            <div class="pipeline-phase-label">Phase 04</div>
+            <div class="pipeline-phase-name">Enterprise Project</div>
+            <div class="pipeline-phase-meta"><div class="progress-track"><div class="progress-fill" style="width:6%"></div></div><span class="mono">6%</span></div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <div style="font-family:'Space Grotesk';font-weight:600;font-size:14.5px;margin-bottom:14px;">Recent Submissions</div>
+            <table>
+              <tr><th>Trainee</th><th>Assignment</th><th>Status</th><th>Score</th></tr>
+              <tr><td>Rohit Menon</td><td>Spark Optimization Lab</td><td><span class="badge blue"><span class="dot"></span>Under review</span></td><td class="mono">—</td></tr>
+              <tr><td>Priya Nair</td><td>Airflow DAG Design</td><td><span class="badge green"><span class="dot"></span>Graded</span></td><td class="mono">92</td></tr>
+              <tr><td>Daniel Cho</td><td>Kafka Routing Challenge</td><td><span class="badge red"><span class="dot"></span>Overdue</span></td><td class="mono">—</td></tr>
+              <tr><td>Fatima Al-Sayed</td><td>DBT Lineage Model</td><td><span class="badge green"><span class="dot"></span>Graded</span></td><td class="mono">88</td></tr>
+            </table>
+          </div>
+
+          <div class="card ai-panel">
+            <div class="ai-header">
+              <div class="ai-spark">✦</div>
+              <div class="ai-title">AI Insights</div>
+            </div>
+            <div class="ai-item"><span><b>4 trainees</b> in Cohort 14 are trending behind on the Kafka module.</span><span class="ai-action">Assign remedial lab →</span></div>
+            <div class="ai-item"><span>Avg. code quality is <b>up 22%</b> since last mentor review cycle.</span><span class="ai-action">View report →</span></div>
+            <div class="ai-item"><span><b>7 approvals</b> have been pending for over 3 days.</span><span class="ai-action">Review queue →</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ TRAINEES VIEW ============ -->
+      <div class="view" id="view-trainees">
+        <div class="page-head">
+          <div>
+            <div class="page-title">Trainees</div>
+            <div class="page-sub">128 trainees across 4 active cohorts</div>
+          </div>
+          <button class="btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add Trainee</button>
+        </div>
+
+        <div class="filter-bar">
+          <div class="chip active">All cohorts</div>
+          <div class="chip">Cohort 14</div>
+          <div class="chip">Cohort 13</div>
+          <div class="chip">At risk only</div>
+          <div class="chip">Phase 3</div>
+        </div>
+
+        <div class="card" style="padding:0;">
+          <table>
+            <tr><th>Trainee</th><th>Cohort</th><th>Phase</th><th>Completion</th><th>Skill score</th><th>Status</th></tr>
+            <tr class="trainee-row">
+              <td><div class="trainee-name-cell"><div class="avatar">RM</div><div><div class="trainee-info-name">Rohit Menon</div><div class="trainee-info-dept">Platform Engineering</div></div></div></td>
+              <td>Cohort 14</td><td>Phase 3</td><td class="mono">74%</td><td class="skill-score">81</td>
+              <td><span class="badge green"><span class="dot"></span>On track</span></td>
+            </tr>
+            <tr class="trainee-row">
+              <td><div class="trainee-name-cell"><div class="avatar">PN</div><div><div class="trainee-info-name">Priya Nair</div><div class="trainee-info-dept">Analytics Engineering</div></div></div></td>
+              <td>Cohort 14</td><td>Phase 3</td><td class="mono">91%</td><td class="skill-score">94</td>
+              <td><span class="badge green"><span class="dot"></span>On track</span></td>
+            </tr>
+            <tr class="trainee-row">
+              <td><div class="trainee-name-cell"><div class="avatar">DC</div><div><div class="trainee-info-name">Daniel Cho</div><div class="trainee-info-dept">Platform Engineering</div></div></div></td>
+              <td>Cohort 13</td><td>Phase 3</td><td class="mono">38%</td><td class="skill-score">52</td>
+              <td><span class="badge red"><span class="dot"></span>Falling behind</span></td>
+            </tr>
+            <tr class="trainee-row">
+              <td><div class="trainee-name-cell"><div class="avatar">FA</div><div><div class="trainee-info-name">Fatima Al-Sayed</div><div class="trainee-info-dept">Data Platform</div></div></div></td>
+              <td>Cohort 14</td><td>Phase 2</td><td class="mono">63%</td><td class="skill-score">76</td>
+              <td><span class="badge amber"><span class="dot"></span>At risk</span></td>
+            </tr>
+            <tr class="trainee-row">
+              <td><div class="trainee-name-cell"><div class="avatar">SK</div><div><div class="trainee-info-name">Sana Khatri</div><div class="trainee-info-dept">Analytics Engineering</div></div></div></td>
+              <td>Cohort 13</td><td>Phase 4</td><td class="mono">96%</td><td class="skill-score">97</td>
+              <td><span class="badge violet"><span class="dot"></span>Capstone review</span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============ ASSIGNMENTS VIEW ============ -->
+      <div class="view" id="view-assignments">
+        <div class="page-head">
+          <div>
+            <div class="page-title">Assignments &amp; Tasks</div>
+            <div class="page-sub">Track lab exercises, assessments, and project sprints across cohorts</div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New Assignment</button>
+        </div>
+
+        <div class="kanban">
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">Draft</span><span class="kanban-count">2</span></div>
+            <div class="kanban-card"><div class="kanban-card-title">Delta Lake Time Travel Exercise</div><div class="kanban-card-tags"><span class="tag">Databricks</span><span class="tag">Phase 3</span></div><div class="kanban-card-foot"><span>Not scheduled</span></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">Published</span><span class="kanban-count">3</span></div>
+            <div class="kanban-card"><div class="kanban-card-title">Airflow DAG Dependency Design</div><div class="kanban-card-tags"><span class="tag">Airflow</span><span class="tag">Cohort 14</span></div><div class="kanban-card-foot"><span>Due Aug 8</span><div class="mini-avatars"><div class="mini-avatar"></div><div class="mini-avatar"></div><div class="mini-avatar"></div></div></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">In Progress</span><span class="kanban-count">6</span></div>
+            <div class="kanban-card"><div class="kanban-card-title">Kafka Event Routing Challenge</div><div class="kanban-card-tags"><span class="tag">Kafka</span><span class="tag">Phase 3</span></div><div class="kanban-card-foot"><span>Due Aug 10</span><div class="mini-avatars"><div class="mini-avatar"></div><div class="mini-avatar"></div></div></div></div>
+            <div class="kanban-card"><div class="kanban-card-title">DBT Lineage Builder Sprint</div><div class="kanban-card-tags"><span class="tag">DBT</span><span class="tag">Cohort 13</span></div><div class="kanban-card-foot"><span>Due Aug 6</span><div class="mini-avatars"><div class="mini-avatar"></div></div></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">Under Review</span><span class="kanban-count">4</span></div>
+            <div class="kanban-card"><div class="kanban-card-title">Spark Optimization Challenge</div><div class="kanban-card-tags"><span class="tag">PySpark</span><span class="tag">AI-graded</span></div><div class="kanban-card-foot"><span>Submitted Aug 1</span></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">Completed</span><span class="kanban-count">18</span></div>
+            <div class="kanban-card"><div class="kanban-card-title">Warehouse Modeling Studio</div><div class="kanban-card-tags"><span class="tag">Modeling</span><span class="tag">Avg 89</span></div><div class="kanban-card-foot"><span>Closed Jul 28</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ ANALYTICS VIEW ============ -->
+      <div class="view" id="view-analytics">
+        <div class="page-head">
+          <div>
+            <div class="page-title">Performance Analytics</div>
+            <div class="page-sub">Organization-wide training metrics · Cohorts 11–14</div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div style="font-weight:600;font-family:'Space Grotesk';margin-bottom:16px;">Assessment Score Distribution</div>
+            <div style="display:flex;align-items:flex-end;gap:10px;height:160px;">
+              <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:30%;border-radius:6px 6px 0 0;"></div>
+              <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:55%;border-radius:6px 6px 0 0;"></div>
+              <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:85%;border-radius:6px 6px 0 0;"></div>
+              <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:100%;border-radius:6px 6px 0 0;"></div>
+              <div style="flex:1;background:linear-gradient(180deg,var(--accent-amber),transparent);height:62%;border-radius:6px 6px 0 0;"></div>
+              <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:40%;border-radius:6px 6px 0 0;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10.5px;color:var(--text-tertiary);">
+              <span>&lt;60</span><span>60-70</span><span>70-80</span><span>80-90</span><span>90-95</span><span>95+</span>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-weight:600;font-family:'Space Grotesk';margin-bottom:16px;">Certification Completion by Department</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Platform Engineering</span><span class="mono">78%</span></div><div class="progress-track"><div class="progress-fill" style="width:78%"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Analytics Engineering</span><span class="mono">91%</span></div><div class="progress-track"><div class="progress-fill" style="width:91%"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Data Platform</span><span class="mono">64%</span></div><div class="progress-track"><div class="progress-fill amber" style="width:64%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ HEATMAP VIEW ============ -->
+      <div class="view" id="view-heatmap">
+        <div class="page-head">
+          <div>
+            <div class="page-title">Organization Skill Heatmap</div>
+            <div class="page-sub">Average proficiency score (0–100) by cohort</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="heatmap">
+            <div></div>
+            <div class="heatmap-col-label">SQL</div><div class="heatmap-col-label">Spark</div><div class="heatmap-col-label">Kafka</div><div class="heatmap-col-label">Airflow</div><div class="heatmap-col-label">DBT</div><div class="heatmap-col-label">Cloud</div>
+
+            <div class="heatmap-label">Cohort 11</div>
+            <div class="heat-cell" style="background:#2E8B57">92</div><div class="heat-cell" style="background:#2E8B57">88</div><div class="heat-cell" style="background:#3a9d63">81</div><div class="heat-cell" style="background:#2E8B57">90</div><div class="heat-cell" style="background:#3a9d63">83</div><div class="heat-cell" style="background:#2E8B57">86</div>
+
+            <div class="heatmap-label">Cohort 12</div>
+            <div class="heat-cell" style="background:#3a9d63">85</div><div class="heat-cell" style="background:#C98A2E">68</div><div class="heat-cell" style="background:#C9682E">58</div><div class="heat-cell" style="background:#3a9d63">79</div><div class="heat-cell" style="background:#C98A2E">65</div><div class="heat-cell" style="background:#3a9d63">80</div>
+
+            <div class="heatmap-label">Cohort 13</div>
+            <div class="heat-cell" style="background:#2E8B57">90</div><div class="heat-cell" style="background:#3a9d63">77</div><div class="heat-cell" style="background:#C98A2E">61</div><div class="heat-cell" style="background:#2E8B57">85</div><div class="heat-cell" style="background:#3a9d63">74</div><div class="heat-cell" style="background:#3a9d63">78</div>
+
+            <div class="heatmap-label">Cohort 14 (current)</div>
+            <div class="heat-cell" style="background:#3a9d63">81</div><div class="heat-cell" style="background:#C98A2E">63</div><div class="heat-cell" style="background:#C9412E">41</div><div class="heat-cell" style="background:#C98A2E">67</div><div class="heat-cell" style="background:#C98A2E">59</div><div class="heat-cell" style="background:#3a9d63">75</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CREATE ASSIGNMENT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">New Assignment</div>
+      <div class="modal-close" onclick="closeModal()">&times;</div>
+    </div>
+    <div class="modal-body">
+      <div class="step-indicator">
+        <div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Assignment title</label>
+        <input class="form-input" value="Kafka Event Routing Challenge" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea">Configure producers and consumers to correctly route events across three topics under simulated production load.</textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-select"><option>Lab Exercise</option><option>Coding Assessment</option><option>Project Sprint</option><option>Capstone Milestone</option></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Curriculum phase</label>
+          <select class="form-select"><option>Phase 3 — Distributed Systems</option><option>Phase 2 — Warehousing &amp; ETL</option><option>Phase 4 — Enterprise Project</option></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Assign to</label>
+        <div class="pill-select">
+          <div class="pill-option selected">Cohort 14</div>
+          <div class="pill-option">Cohort 13</div>
+          <div class="pill-option">Individual trainee</div>
+          <div class="pill-option">Entire org</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Due date</label>
+          <input class="form-input" value="Aug 10, 2026" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Evaluation mode</label>
+          <select class="form-select"><option>AI auto-grading</option><option>Mentor review</option><option>Hybrid</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Save as draft</button>
+      <button class="btn btn-primary" onclick="closeModal()">Publish assignment</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.nav-item[data-view]').forEach(item=>{
+  item.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item[data-view]').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+item.dataset.view).classList.add('active');
+  });
+});
+document.querySelectorAll('.chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    c.parentElement.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+  });
+});
+document.querySelectorAll('.pill-option').forEach(p=>{
+  p.addEventListener('click',()=>{
+    p.parentElement.querySelectorAll('.pill-option').forEach(x=>x.classList.remove('selected'));
+    p.classList.add('selected');
+  });
+});
+function openModal(){document.getElementById('modalOverlay').classList.add('active');}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('active');}
+document.getElementById('openCreateBtn').addEventListener('click',openModal);
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target.id==='modalOverlay')closeModal();});
+</script>
+
+</body>
+</html>

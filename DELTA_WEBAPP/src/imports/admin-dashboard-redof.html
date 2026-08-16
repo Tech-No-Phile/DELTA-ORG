@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Data Engineering Academy — Admin Console</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg-deep:#080C14;
+  --bg-surface:#0D1525;
+  --bg-glass:rgba(22,28,40,0.6);
+  --bg-glass-hover:rgba(28,35,50,0.8);
+  --border:#212A3A;
+  --border-soft:#1A2230;
+  --text-primary:#E2E8F0;
+  --text-secondary:#8891A5;
+  --text-tertiary:#64748B;
+  --accent-flow:#3B82F6;
+  --accent-flow-dim:rgba(59,130,246,0.15);
+  --accent-amber:#F0A94E;
+  --accent-amber-dim:rgba(240,169,78,0.15);
+  --accent-green:#3ECF8E;
+  --accent-green-dim:rgba(62,207,142,0.15);
+  --accent-red:#F0556B;
+  --accent-red-dim:rgba(240,85,107,0.15);
+  --accent-violet:#9D7BFF;
+  --accent-violet-dim:rgba(157,123,255,0.15);
+  --accent-cyan:#06B6D4;
+  --accent-cyan-dim:rgba(6,182,212,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg-deep);
+  color:var(--text-primary);
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  line-height:1.5;
+  min-height:100vh;
+  overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(59,130,246,0.06), transparent 40%),
+    radial-gradient(circle at 85% 100%, rgba(157,123,255,0.05), transparent 40%);
+}
+.mono{font-family:'JetBrains Mono',monospace;}
+.display{font-family:'Space Grotesk',sans-serif;}
+
+/* ---------- LAYOUT ---------- */
+.app{min-height:100vh;display:flex;flex-direction:column;}
+
+/* NAVBAR */
+.navbar{
+  height:60px;flex-shrink:0;width:100%;min-width:0;
+  border-bottom:1px solid var(--border-soft);
+  display:flex;align-items:center;
+  padding:0 24px;gap:20px;
+  background:rgba(8,12,20,0.85);backdrop-filter:blur(14px);
+  position:sticky;top:0;z-index:40;
+}
+.brand{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.brand-mark{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent-flow),var(--accent-violet));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk';font-weight:700;font-size:14px;color:#fff;
+}
+.brand-name{font-family:'Space Grotesk';font-weight:600;font-size:14.5px;letter-spacing:-0.01em;}
+.brand-sub{font-size:10px;color:var(--text-tertiary);margin-top:1px;}
+
+.nav-items{display:flex;align-items:center;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
+.nav-items::-webkit-scrollbar{display:none;}
+.nav-item{
+  position:relative;
+  display:flex;align-items:center;gap:7px;
+  padding:8px 12px;border-radius:8px;
+  color:var(--text-secondary);font-size:13.5px;font-weight:500;
+  cursor:pointer;transition:all .15s ease;
+  border:1px solid transparent;white-space:nowrap;
+}
+.nav-item:hover{background:var(--bg-glass);color:var(--text-primary);}
+.nav-item.active{
+  background:var(--accent-flow-dim);
+  color:var(--accent-flow);
+  border-color:rgba(59,130,246,0.25);
+}
+.nav-icon{width:15px;height:15px;flex-shrink:0;opacity:0.9;}
+.nav-caret{width:11px;height:11px;opacity:0.6;transition:transform .15s;}
+.nav-item.dropdown-open .nav-caret{transform:rotate(180deg);}
+.nav-badge{
+  font-size:10px;font-family:'JetBrains Mono';
+  background:var(--accent-red-dim);color:var(--accent-red);
+  padding:1px 6px;border-radius:20px;
+}
+
+/* CONTENT SERVICE MEGA DROPDOWN */
+.mega-dropdown{
+  position:fixed;
+  width:300px;background:#0D1525;border:1px solid var(--border);
+  border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,0.45);
+  z-index:60;display:none;overflow:hidden;padding:6px;
+}
+.mega-dropdown.open{display:block;animation:fadeIn .15s ease;}
+.mega-item{
+  display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;cursor:pointer;
+}
+.mega-item:hover{background:var(--bg-glass);}
+.mega-item-icon{
+  width:30px;height:30px;border-radius:7px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono';font-size:10.5px;font-weight:600;
+}
+.mega-item-name{font-size:13px;font-weight:600;color:var(--text-primary);}
+.mega-item-desc{font-size:10.5px;color:var(--text-tertiary);margin-top:1px;}
+
+.navbar-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+@media (max-width:1180px){ .search-box{display:none;} }
+@media (max-width:980px){ #openCreateBtn{padding:8px 10px;} #openCreateBtn .btn-label{display:none;} }
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg-surface);border:1px solid var(--border);
+  border-radius:8px;padding:7px 12px;width:230px;color:var(--text-tertiary);font-size:12.5px;
+}
+.btn{
+  font-family:'Inter';font-weight:600;font-size:13px;
+  padding:8px 14px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--border);background:var(--bg-surface);color:var(--text-primary);
+  display:flex;align-items:center;gap:6px;transition:all .15s;
+}
+.btn:hover{background:var(--bg-glass-hover);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent-flow),#3A6FE0);
+  border:none;color:#fff;
+  box-shadow:0 4px 14px rgba(59,130,246,0.25);
+}
+.btn-primary:hover{filter:brightness(1.08);}
+.icon-btn{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--text-secondary);
+  cursor:pointer;background:var(--bg-surface);position:relative;
+}
+.icon-btn:hover{color:var(--text-primary);background:var(--bg-glass-hover);}
+.dot-alert{
+  position:absolute;top:6px;right:6px;width:6px;height:6px;border-radius:50%;
+  background:var(--accent-red);box-shadow:0 0 0 2px var(--bg-surface);
+}
+.avatar{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,#2A3346,#1A2130);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk';font-size:12px;font-weight:600;color:var(--text-secondary);
+  border:1px solid var(--border);
+}
+
+.topbar-item{position:relative;}
+.dropdown{
+  position:absolute;top:calc(100% + 10px);right:0;
+  width:320px;background:#0D1525;border:1px solid var(--border);
+  border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,0.45);
+  z-index:50;display:none;overflow:hidden;
+}
+.dropdown.open{display:block;animation:fadeIn .15s ease;}
+.dropdown-head{
+  padding:13px 16px;border-bottom:1px solid var(--border-soft);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.dropdown-title{font-family:'Space Grotesk';font-weight:600;font-size:13.5px;}
+.dropdown-mark{font-size:11px;color:var(--accent-flow);cursor:pointer;font-weight:600;}
+.dropdown-list{max-height:320px;overflow-y:auto;}
+.notif-item{
+  display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border-soft);cursor:pointer;
+  transition:opacity .1s;
+}
+.notif-item:last-child{border-bottom:none;}
+.notif-item:hover{background:var(--bg-glass);}
+.notif-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.notif-text{font-size:12.5px;color:var(--text-secondary);line-height:1.45;}
+.notif-text b{color:var(--text-primary);font-weight:600;}
+.notif-time{font-size:10.5px;color:var(--text-tertiary);margin-top:4px;}
+.profile-menu{padding:8px;}
+.profile-menu-head{padding:10px 12px 12px;border-bottom:1px solid var(--border-soft);margin-bottom:6px;display:flex;gap:10px;align-items:center;}
+.profile-menu-name{font-size:13px;font-weight:600;}
+.profile-menu-email{font-size:11px;color:var(--text-tertiary);}
+.profile-menu-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;
+  font-size:12.5px;color:var(--text-secondary);cursor:pointer;
+}
+.profile-menu-item:hover{background:var(--bg-glass);color:var(--text-primary);}
+.profile-menu-item svg{width:15px;height:15px;flex-shrink:0;}
+.profile-menu-item.danger{color:var(--accent-red);}
+.profile-menu-item.danger:hover{background:var(--accent-red-dim);}
+.profile-menu-divider{height:1px;background:var(--border-soft);margin:6px 4px;}
+
+/* MAIN CONTENT */
+.content{padding:26px 32px 60px;flex:1;max-width:1400px;width:100%;margin:0 auto;}
+.view{display:none;animation:fadeIn .25s ease;}
+.view.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px;}
+.page-title{font-family:'Space Grotesk';font-size:22px;font-weight:600;letter-spacing:-0.01em;}
+.page-sub{color:var(--text-secondary);font-size:13px;margin-top:4px;}
+
+/* CARDS */
+.card{
+  background:var(--bg-glass);
+  border:1px solid var(--border-soft);
+  border-radius:14px;
+  padding:18px;
+  backdrop-filter:blur(10px);
+}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+.stat-card{position:relative;overflow:hidden;cursor:pointer;transition:transform .15s ease, border-color .15s ease;}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--accent-flow);}
+.stat-label{font-size:12px;color:var(--text-secondary);font-weight:500;}
+.stat-value{font-family:'Space Grotesk';font-size:28px;font-weight:600;margin-top:8px;letter-spacing:-0.02em;}
+.stat-delta{font-size:11.5px;margin-top:6px;font-family:'JetBrains Mono';}
+.stat-delta.up{color:var(--accent-green);}
+.stat-delta.down{color:var(--accent-red);}
+.stat-delta.warn{color:var(--accent-amber);}
+
+/* PIPELINE / DAG SIGNATURE ELEMENT */
+.pipeline-row{display:flex;align-items:stretch;gap:0;margin:22px 0 26px;position:relative;}
+.pipeline-node{flex:1;background:var(--bg-glass);border:1px solid var(--border-soft);border-radius:12px;padding:16px 18px;position:relative;z-index:2;cursor:pointer;transition:border-color .15s ease;}
+.pipeline-node:hover{border-color:var(--accent-flow);}
+.pipeline-node.risk{border-color:rgba(240,169,78,0.4);}
+.pipeline-connector{flex:0 0 40px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;}
+.pipeline-connector svg{width:100%;height:2px;overflow:visible;}
+.pipeline-phase-label{font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);font-weight:600;}
+.pipeline-phase-name{font-family:'Space Grotesk';font-weight:600;font-size:14.5px;margin-top:6px;}
+.pipeline-phase-meta{display:flex;justify-content:space-between;align-items:center;margin-top:12px;}
+.progress-track{flex:1;height:5px;background:var(--bg-surface);border-radius:10px;overflow:hidden;margin-right:10px;}
+.progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent-flow),#7AB2FF);}
+.progress-fill.amber{background:linear-gradient(90deg,var(--accent-amber),#FFC98A);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:'JetBrains Mono';}
+.badge.green{background:var(--accent-green-dim);color:var(--accent-green);}
+.badge.amber{background:var(--accent-amber-dim);color:var(--accent-amber);}
+.badge.red{background:var(--accent-red-dim);color:var(--accent-red);}
+.badge.blue{background:var(--accent-flow-dim);color:var(--accent-flow);}
+.badge.violet{background:var(--accent-violet-dim);color:var(--accent-violet);}
+.badge.gray{background:rgba(148,163,184,0.12);color:var(--text-secondary);}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+/* AI INSIGHTS */
+.ai-panel{border:1px solid rgba(157,123,255,0.25);background:linear-gradient(180deg, rgba(157,123,255,0.06), transparent);}
+.ai-header{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.ai-spark{width:22px;height:22px;border-radius:6px;background:var(--accent-violet-dim);display:flex;align-items:center;justify-content:center;color:var(--accent-violet);}
+.ai-title{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
+.ai-item{padding:11px 12px;border-radius:9px;background:var(--bg-surface);border:1px solid var(--border-soft);margin-bottom:8px;font-size:12.5px;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.ai-item b{color:var(--text-primary);font-weight:600;}
+.ai-action{font-size:11px;color:var(--accent-violet);font-weight:600;white-space:nowrap;cursor:pointer;transition:opacity .15s;}
+.ai-action:hover{opacity:.7;}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-tertiary);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--border-soft);}
+td{padding:12px 14px;border-bottom:1px solid var(--border-soft);font-size:13px;}
+tr:last-child td{border-bottom:none;}
+tr.trainee-row{cursor:pointer;}
+tr.trainee-row:hover{background:var(--bg-glass);}
+.trainee-name-cell{display:flex;align-items:center;gap:10px;}
+.trainee-info-name{font-weight:600;font-size:13px;}
+.trainee-info-dept{font-size:11.5px;color:var(--text-tertiary);}
+.skill-score{font-family:'JetBrains Mono';font-weight:600;}
+.filter-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.chip{padding:7px 13px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface);font-size:12.5px;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:6px;}
+.chip.active{border-color:var(--accent-flow);color:var(--accent-flow);background:var(--accent-flow-dim);}
+
+/* SUBTABS (Assignments / Assessments) */
+.subtab-bar{display:flex;gap:6px;margin-bottom:20px;border-bottom:1px solid var(--border-soft);}
+.subtab-btn{padding:10px 4px;margin-right:20px;font-size:13.5px;font-weight:600;color:var(--text-tertiary);cursor:pointer;position:relative;transition:color .15s;}
+.subtab-btn:hover{color:var(--text-secondary);}
+.subtab-btn.active{color:var(--text-primary);}
+.subtab-btn.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent-flow);border-radius:2px;}
+
+/* BATCH FILTER DROPDOWNS */
+.batch-filter-group{display:flex;align-items:center;gap:8px;background:var(--bg-surface);border:1px solid var(--border);border-radius:9px;padding:6px 8px;}
+.batch-filter-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-tertiary);padding-left:4px;white-space:nowrap;}
+.batch-select{
+  background:var(--bg-glass);border:1px solid var(--border-soft);border-radius:7px;
+  padding:6px 26px 6px 10px;color:var(--text-primary);font-size:12.5px;font-family:'Inter';font-weight:500;
+  cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238891A5' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center;
+}
+.batch-select:focus{outline:none;border-color:var(--accent-flow);}
+.batch-code-pill{
+  font-family:'JetBrains Mono';font-size:11.5px;font-weight:600;color:var(--accent-flow);
+  background:var(--accent-flow-dim);padding:3px 9px;border-radius:6px;
+}
+
+/* KANBAN */
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:18px;}
+.kanban-col{background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:12px;padding:12px;min-height:200px;}
+.kanban-col-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 2px;}
+.kanban-col-title{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-secondary);}
+.kanban-count{font-family:'JetBrains Mono';font-size:11px;color:var(--text-tertiary);background:var(--bg-glass);padding:1px 7px;border-radius:20px;}
+.kanban-card{background:var(--bg-glass);border:1px solid var(--border-soft);border-radius:9px;padding:11px 12px;margin-bottom:10px;cursor:pointer;transition:border-color .15s;}
+.kanban-card:hover{border-color:var(--accent-flow);}
+.kanban-card-title{font-size:12.5px;font-weight:600;margin-bottom:8px;line-height:1.35;}
+.kanban-card-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px;}
+.tag{font-size:10px;padding:2px 7px;border-radius:5px;background:var(--bg-deep);color:var(--text-tertiary);border:1px solid var(--border-soft);}
+.kanban-card-foot{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-tertiary);}
+.mini-avatars{display:flex;}
+.mini-avatar{width:18px;height:18px;border-radius:5px;background:#232B3E;border:2px solid var(--bg-glass);margin-left:-6px;}
+.mini-avatar:first-child{margin-left:0;}
+
+/* HEATMAP */
+.heatmap{display:grid;grid-template-columns:140px repeat(6,1fr);gap:4px;margin-top:18px;}
+.heatmap-label{font-size:11.5px;color:var(--text-secondary);display:flex;align-items:center;padding:8px 4px;font-weight:500;}
+.heatmap-col-label{font-size:10.5px;color:var(--text-tertiary);text-align:center;padding-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em;}
+.heat-cell{aspect-ratio:2/1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:11px;font-weight:600;color:#fff;cursor:pointer;position:relative;transition:transform .1s;}
+.heat-cell:hover{transform:scale(1.08);z-index:2;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(6,8,12,0.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;}
+.modal-overlay.active{display:flex;}
+.modal{width:560px;max-height:86vh;overflow-y:auto;background:#0D1218;border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-family:'Space Grotesk';font-weight:600;font-size:16px;}
+.modal-close{cursor:pointer;color:var(--text-tertiary);font-size:18px;line-height:1;}
+.modal-body{padding:20px 22px;}
+.step-indicator{display:flex;gap:6px;margin-bottom:20px;}
+.step-dot{flex:1;height:3px;border-radius:3px;background:var(--border);}
+.step-dot.done{background:var(--accent-flow);}
+.form-group{margin-bottom:16px;}
+.form-label{font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:7px;display:block;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text-primary);font-size:13px;font-family:'Inter';}
+.form-textarea{min-height:70px;resize:vertical;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pill-select{display:flex;gap:8px;flex-wrap:wrap;}
+.pill-option{padding:7px 13px;border-radius:20px;border:1px solid var(--border);font-size:12px;color:var(--text-secondary);cursor:pointer;background:var(--bg-surface);}
+.pill-option.selected{border-color:var(--accent-flow);color:var(--accent-flow);background:var(--accent-flow-dim);}
+.modal-foot{padding:16px 22px;border-top:1px solid var(--border-soft);display:flex;justify-content:flex-end;gap:10px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:200;background:#0D1218;border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12.5px;color:var(--text-primary);box-shadow:0 12px 30px rgba(0,0,0,0.4);display:flex;align-items:center;gap:8px;transform:translateY(20px);opacity:0;pointer-events:none;transition:all .25s ease;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-green);flex-shrink:0;}
+
+/* DETAIL MODAL */
+.detail-modal .modal{width:600px;}
+.detail-head-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.detail-avatar{width:44px;height:44px;border-radius:10px;font-size:15px;}
+.detail-name{font-family:'Space Grotesk';font-weight:600;font-size:16px;}
+.detail-sub{font-size:12px;color:var(--text-tertiary);margin-top:2px;}
+.detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.detail-stat{background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:10px;padding:10px 12px;}
+.detail-stat-label{font-size:10px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.04em;}
+.detail-stat-value{font-family:'JetBrains Mono';font-weight:600;font-size:16px;margin-top:4px;}
+.detail-section-title{font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin:16px 0 8px;}
+.skill-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.skill-bar-label{width:80px;font-size:12px;color:var(--text-secondary);flex-shrink:0;}
+.skill-bar-value{width:30px;text-align:right;font-family:'JetBrains Mono';font-size:11px;flex-shrink:0;}
+
+/* HEATMAP TOOLTIP */
+.heat-tooltip{position:fixed;z-index:300;background:#0D1218;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:11.5px;color:var(--text-primary);box-shadow:0 10px 24px rgba(0,0,0,0.4);pointer-events:none;display:none;white-space:nowrap;}
+.heat-tooltip.show{display:block;}
+
+/* ---------- CONTENT SERVICE (documentation-style layout) ---------- */
+.cs-layout{display:grid;grid-template-columns:250px 1fr 190px;gap:0;align-items:start;border:1px solid var(--border-soft);border-radius:14px;overflow:hidden;background:var(--bg-glass);backdrop-filter:blur(10px);}
+
+/* LEFT: doc nav sidebar */
+.cs-sidebar{padding:16px 10px;border-right:1px solid var(--border-soft);align-self:stretch;}
+.cs-priority-item{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:10px;cursor:pointer;border:1px solid rgba(157,123,255,0.3);background:rgba(157,123,255,0.08);margin-bottom:16px;transition:all .15s;}
+.cs-priority-item:hover{background:rgba(157,123,255,0.14);}
+.cs-priority-item.active{border-color:#9D7BFF;background:rgba(157,123,255,0.16);}
+.cs-priority-badge{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9D7BFF;background:rgba(157,123,255,0.18);padding:1px 6px;border-radius:4px;margin-top:2px;display:inline-block;}
+.cs-cat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-tertiary);padding:14px 11px 7px;}
+.cs-cat-label:first-of-type{padding-top:0;}
+.cs-topic-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:all .15s;}
+.cs-topic-item:hover{background:var(--bg-glass-hover);}
+.cs-topic-item.active{background:var(--accent-flow-dim);border-color:rgba(59,130,246,0.25);}
+.cs-topic-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:9.5px;font-weight:700;flex-shrink:0;}
+.cs-topic-name{font-size:12.5px;font-weight:600;color:var(--text-primary);}
+
+/* CENTER: doc content */
+.cs-doc-card{padding:30px 34px;min-height:520px;}
+.cs-breadcrumb{font-size:11.5px;color:var(--text-tertiary);margin-bottom:16px;display:flex;align-items:center;gap:6px;}
+.cs-breadcrumb a{color:var(--text-tertiary);cursor:pointer;}
+.cs-breadcrumb a:hover{color:var(--accent-flow);}
+.cs-doc-head{display:flex;align-items:center;gap:14px;margin-bottom:10px;}
+.cs-doc-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:16px;font-weight:700;flex-shrink:0;}
+.cs-doc-title{font-family:'Space Grotesk';font-size:23px;font-weight:600;letter-spacing:-0.01em;}
+.cs-doc-subtitle{font-size:12.5px;color:var(--text-tertiary);margin-top:2px;}
+.cs-doc-divider{height:1px;background:var(--border-soft);margin:20px 0 6px;}
+.cs-section-label{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin:28px 0 11px;scroll-margin-top:20px;}
+.cs-section-label .qmark{width:21px;height:21px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:11px;font-weight:700;flex-shrink:0;}
+.cs-section-label.what .qmark{background:var(--accent-flow-dim);color:var(--accent-flow);}
+.cs-section-label.why .qmark{background:var(--accent-amber-dim);color:var(--accent-amber);}
+.cs-section-label.how .qmark{background:var(--accent-green-dim);color:var(--accent-green);}
+.cs-section-label.what{color:var(--accent-flow);}
+.cs-section-label.why{color:var(--accent-amber);}
+.cs-section-label.how{color:var(--accent-green);}
+.cs-body-text{font-size:14px;color:var(--text-secondary);line-height:1.75;}
+.cs-how-step{margin-bottom:20px;}
+.cs-how-step-title{font-size:13.5px;font-weight:600;color:var(--text-primary);margin-bottom:9px;}
+.code-block{background:#070A10;border:1px solid var(--border-soft);border-radius:10px;overflow:hidden;}
+.code-block-head{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border-soft);background:rgba(255,255,255,0.02);}
+.code-block-lang{font-size:10.5px;font-family:'JetBrains Mono';color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;}
+.code-block-dots{display:flex;gap:5px;}
+.code-block-dots span{width:8px;height:8px;border-radius:50%;background:var(--border);}
+.code-block pre{margin:0;padding:14px 16px;overflow-x:auto;}
+.code-block code{font-family:'JetBrains Mono';font-size:12px;line-height:1.65;color:#C9D6E8;white-space:pre;}
+
+/* Compare-with-related-topics */
+.cs-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;}
+.cs-compare-card{background:var(--bg-surface);border:1px solid var(--border-soft);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s;}
+.cs-compare-card:hover{border-color:var(--accent-flow);}
+.cs-compare-card-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.cs-compare-card-icon{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-size:9px;font-weight:700;flex-shrink:0;}
+.cs-compare-card-name{font-size:12.5px;font-weight:700;color:var(--text-primary);}
+.cs-compare-card-note{font-size:11.5px;color:var(--text-secondary);line-height:1.5;}
+
+/* RIGHT: on-this-page TOC */
+.cs-toc{padding:24px 18px;align-self:stretch;border-left:1px solid var(--border-soft);}
+.cs-toc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-tertiary);margin-bottom:10px;}
+.cs-toc-link{display:block;font-size:12px;color:var(--text-secondary);padding:5px 0;cursor:pointer;border-left:2px solid transparent;padding-left:10px;margin-left:-1px;transition:all .15s;}
+.cs-toc-link:hover{color:var(--text-primary);}
+
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="brand">
+      <div class="brand-mark">DE</div>
+      <div>
+        <div class="brand-name">Academy Console</div>
+        <div class="brand-sub">Admin workspace</div>
+      </div>
+    </div>
+
+    <div class="nav-items">
+      <div class="nav-item active" data-view="dashboard" onclick="goTo('dashboard')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" data-view="trainees" onclick="goTo('trainees')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.8-6 6-6s6 2.5 6 6"/><circle cx="17" cy="8.5" r="2.6"/><path d="M15.5 14.2c2.6.3 4.5 2.6 4.5 5.8"/></svg>
+        Trainees
+      </div>
+      <div class="nav-item" data-view="assignments" onclick="goTo('assignments')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+        Assignments
+      </div>
+
+      <!-- CONTENT SERVICE with mega dropdown -->
+      <div class="topbar-item">
+        <div class="nav-item" id="csNavItem" onclick="toggleContentServiceDropdown(event)">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15Z"/></svg>
+          Content Service
+          <svg class="nav-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div class="mega-dropdown" id="csDropdown">
+          <div class="mega-item" onclick="openContentTopic('ai-de')" style="background:rgba(157,123,255,0.06);border:1px solid rgba(157,123,255,0.2);margin-bottom:6px;"><div class="mega-item-icon" style="background:rgba(157,123,255,0.18);color:#9D7BFF;">★</div><div><div class="mega-item-name">AI vs Data Engineering <span style="font-size:9px;color:#9D7BFF;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Priority</span></div><div class="mega-item-desc">Start here — the core distinction</div></div></div>
+          <div class="mega-item" onclick="openContentTopic('pyspark')"><div class="mega-item-icon" style="background:rgba(240,169,78,0.15);color:#F0A94E;">PY</div><div><div class="mega-item-name">PySpark</div><div class="mega-item-desc">Distributed DataFrame processing</div></div></div>
+          <div class="mega-item" onclick="openContentTopic('kafka')"><div class="mega-item-icon" style="background:rgba(240,85,107,0.15);color:#F0556B;">KF</div><div><div class="mega-item-name">Kafka</div><div class="mega-item-desc">Event streaming & topics</div></div></div>
+          <div class="mega-item" onclick="openContentTopic('airflow')"><div class="mega-item-icon" style="background:rgba(59,130,246,0.15);color:#3B82F6;">AF</div><div><div class="mega-item-name">Airflow</div><div class="mega-item-desc">DAG-based orchestration</div></div></div>
+          <div class="mega-item" onclick="openContentTopic('dbt')"><div class="mega-item-icon" style="background:rgba(62,207,142,0.15);color:#3ECF8E;">DBT</div><div><div class="mega-item-name">DBT</div><div class="mega-item-desc">SQL transformation models</div></div></div>
+          <div class="mega-item" onclick="openContentTopic('delta')"><div class="mega-item-icon" style="background:rgba(157,123,255,0.15);color:#9D7BFF;">DL</div><div><div class="mega-item-name">Delta Lake</div><div class="mega-item-desc">ACID tables & time travel</div></div></div>
+          <div class="mega-item" onclick="openContentTopic('warehousing')"><div class="mega-item-icon" style="background:rgba(6,182,212,0.15);color:#06B6D4;">DW</div><div><div class="mega-item-name">Data Warehousing</div><div class="mega-item-desc">Star & snowflake schemas</div></div></div>
+        </div>
+      </div>
+
+      <div class="nav-item" data-view="certifications" onclick="goTo('certifications')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 2 8 3.6v6.1c0 5-3.4 8.3-8 10.3-4.6-2-8-5.3-8-10.3V5.6L12 2Z"/></svg>
+        Certifications
+      </div>
+      <div class="nav-item" data-view="analytics" onclick="goTo('analytics')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M11 20V4M18 20v-7"/></svg>
+        Analytics
+      </div>
+    </div>
+
+    <div class="navbar-actions">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        Search…
+      </div>
+      <button class="btn" id="openCreateBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> <span class="btn-label">New Assignment</span></button>
+
+      <div class="topbar-item">
+        <div class="icon-btn" id="notifBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="dot-alert" id="notifDot"></span></div>
+        <div class="dropdown" id="notifDropdown">
+          <div class="dropdown-head">
+            <div class="dropdown-title">Notifications</div>
+            <div class="dropdown-mark" id="markReadBtn">Mark all read</div>
+          </div>
+          <div class="dropdown-list">
+            <div class="notif-item" onclick="goTo('trainees');closeDropdowns()"><div class="notif-dot" style="background:var(--accent-red)"></div><div class="notif-text"><b>Daniel Cho</b> missed the Kafka Routing Challenge deadline.<div class="notif-time">12 minutes ago</div></div></div>
+            <div class="notif-item" onclick="goTo('certifications');closeDropdowns()"><div class="notif-dot" style="background:var(--accent-violet)"></div><div class="notif-text"><b>Sana Khatri's</b> capstone is ready for your approval.<div class="notif-time">1 hour ago</div></div></div>
+            <div class="notif-item" onclick="openContentTopic('kafka');closeDropdowns()"><div class="notif-dot" style="background:var(--accent-amber)"></div><div class="notif-text">AI flagged a <b>Kafka module</b> pass-rate drop across Batch B50.<div class="notif-time">3 hours ago</div></div></div>
+            <div class="notif-item" onclick="openTrainee('priya');closeDropdowns()"><div class="notif-dot" style="background:var(--accent-green)"></div><div class="notif-text"><b>Priya Nair</b> scored 92 on Airflow DAG Design.<div class="notif-time">Yesterday</div></div></div>
+            <div class="notif-item" onclick="goTo('analytics');closeDropdowns()"><div class="notif-dot" style="background:var(--accent-flow)"></div><div class="notif-text">Batch B50 skill heatmap updated with new assessment data.<div class="notif-time">Yesterday</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topbar-item">
+        <div class="avatar" id="profileBtn" style="cursor:pointer;">AR</div>
+        <div class="dropdown" id="profileDropdown" style="width:230px;">
+          <div class="profile-menu">
+            <div class="profile-menu-head">
+              <div class="avatar">AR</div>
+              <div>
+                <div class="profile-menu-name">Aisha Rahman</div>
+                <div class="profile-menu-email">aisha.rahman@company.com</div>
+              </div>
+            </div>
+            <div class="profile-menu-item" onclick="closeDropdowns();showToast('Opening profile settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.5 3.5-6 8-6s8 2.5 8 6"/></svg>My profile</div>
+            <div class="profile-menu-item" onclick="closeDropdowns();showToast('Opening account settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8"/></svg>Account settings</div>
+            <div class="profile-menu-item" onclick="closeDropdowns();showToast('Appearance settings coming soon')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>Appearance</div>
+            <div class="profile-menu-divider"></div>
+            <div class="profile-menu-item danger" onclick="closeDropdowns();showToast('Signed out (demo only)')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Log out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <!-- ============ DASHBOARD VIEW ============ -->
+    <div class="view active" id="view-dashboard">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Program Overview</div>
+          <div class="page-sub">Batch B50 · Week 6 of 16 · Last synced 4 minutes ago</div>
+        </div>
+      </div>
+
+      <div class="grid-4">
+        <div class="card stat-card" onclick="goTo('trainees')">
+          <div class="stat-label">Active Trainees</div>
+          <div class="stat-value">128</div>
+          <div class="stat-delta up">↑ 6 new this week</div>
+        </div>
+        <div class="card stat-card" onclick="goTo('analytics')">
+          <div class="stat-label">Avg. Completion</div>
+          <div class="stat-value">67%</div>
+          <div class="stat-delta up">↑ 3.2% vs last week</div>
+        </div>
+        <div class="card stat-card" onclick="goTo('trainees'); setTimeout(()=>filterChip('At risk only'),50)">
+          <div class="stat-label">At Risk</div>
+          <div class="stat-value">14</div>
+          <div class="stat-delta warn">⚠ Kafka module bottleneck</div>
+        </div>
+        <div class="card stat-card" onclick="goTo('certifications')">
+          <div class="stat-label">Pending Approvals</div>
+          <div class="stat-value">7</div>
+          <div class="stat-delta">4 capstones, 3 certifications</div>
+        </div>
+      </div>
+
+      <div class="pipeline-row">
+        <div class="pipeline-node" onclick="openContentTopic('pyspark')">
+          <div class="pipeline-phase-label">Phase 01</div>
+          <div class="pipeline-phase-name">Foundations</div>
+          <div class="pipeline-phase-meta"><div class="progress-track"><div class="progress-fill" style="width:100%"></div></div><span class="mono">100%</span></div>
+        </div>
+        <div class="pipeline-connector"><svg><line x1="0" y1="1" x2="100%" y2="1" stroke="#2B3548" stroke-width="2" stroke-dasharray="4 4"/></svg></div>
+        <div class="pipeline-node" onclick="openContentTopic('warehousing')">
+          <div class="pipeline-phase-label">Phase 02</div>
+          <div class="pipeline-phase-name">Warehousing &amp; ETL</div>
+          <div class="pipeline-phase-meta"><div class="progress-track"><div class="progress-fill" style="width:88%"></div></div><span class="mono">88%</span></div>
+        </div>
+        <div class="pipeline-connector"><svg><line x1="0" y1="1" x2="100%" y2="1" stroke="#2B3548" stroke-width="2" stroke-dasharray="4 4"/></svg></div>
+        <div class="pipeline-node risk" onclick="openContentTopic('kafka')">
+          <div class="pipeline-phase-label">Phase 03</div>
+          <div class="pipeline-phase-name">Distributed Systems</div>
+          <div class="pipeline-phase-meta"><div class="progress-track"><div class="progress-fill amber" style="width:41%"></div></div><span class="mono">41%</span></div>
+        </div>
+        <div class="pipeline-connector"><svg><line x1="0" y1="1" x2="100%" y2="1" stroke="#2B3548" stroke-width="2" stroke-dasharray="4 4"/></svg></div>
+        <div class="pipeline-node" onclick="goTo('assignments')">
+          <div class="pipeline-phase-label">Phase 04</div>
+          <div class="pipeline-phase-name">Enterprise Project</div>
+          <div class="pipeline-phase-meta"><div class="progress-track"><div class="progress-fill" style="width:6%"></div></div><span class="mono">6%</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-family:'Space Grotesk';font-weight:600;font-size:14.5px;margin-bottom:14px;">Recent Submissions</div>
+        <table>
+          <tr><th>Trainee</th><th>Assignment</th><th>Status</th><th>Score</th></tr>
+          <tr class="trainee-row" onclick="openTrainee('rohit')"><td>Rohit Menon</td><td>Spark Optimization Lab</td><td><span class="badge blue"><span class="dot"></span>Under review</span></td><td class="mono">—</td></tr>
+          <tr class="trainee-row" onclick="openTrainee('priya')"><td>Priya Nair</td><td>Airflow DAG Design</td><td><span class="badge green"><span class="dot"></span>Graded</span></td><td class="mono">92</td></tr>
+          <tr class="trainee-row" onclick="openTrainee('daniel')"><td>Daniel Cho</td><td>Kafka Routing Challenge</td><td><span class="badge red"><span class="dot"></span>Overdue</span></td><td class="mono">—</td></tr>
+          <tr class="trainee-row" onclick="openTrainee('fatima')"><td>Fatima Al-Sayed</td><td>DBT Lineage Model</td><td><span class="badge green"><span class="dot"></span>Graded</span></td><td class="mono">88</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ TRAINEES VIEW ============ -->
+    <div class="view" id="view-trainees">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Trainees</div>
+          <div class="page-sub">128 trainees across 4 active cohorts</div>
+        </div>
+        <button class="btn" onclick="openQuickModal('trainee')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add Trainee</button>
+      </div>
+
+      <div class="filter-bar">
+        <div class="batch-filter-group">
+          <span class="batch-filter-label">Batch</span>
+          <select class="batch-select" id="batchSelect" onchange="applyBatchFilter()">
+            <option value="all">All</option>
+            <option value="B49">B49</option>
+            <option value="B50">B50</option>
+          </select>
+        </div>
+        <div class="batch-filter-group">
+          <span class="batch-filter-label">Group</span>
+          <select class="batch-select" id="groupSelect" onchange="applyBatchFilter()">
+            <option value="all">All</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+          </select>
+        </div>
+        <div class="batch-filter-group">
+          <span class="batch-filter-label">Sub-batch</span>
+          <select class="batch-select" id="subSelect" onchange="applyBatchFilter()">
+            <option value="all">All</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <div class="chip active" onclick="filterChip('All')">All trainees</div>
+        <div class="chip" onclick="filterChip('At risk only')">At risk only</div>
+        <div class="chip" onclick="filterChip('Phase 3')">Phase 3</div>
+      </div>
+
+      <div class="card" style="padding:0;">
+        <table id="traineeTable">
+          <tr><th>Trainee</th><th>Batch</th><th>Phase</th><th>Completion</th><th>Skill score</th><th>Status</th></tr>
+          <tr class="trainee-row" data-batch="B50" data-group="A" data-sub="2" data-phase="Phase 3" data-risk="ok" onclick="openTrainee('rohit')">
+            <td><div class="trainee-name-cell"><div class="avatar">RM</div><div><div class="trainee-info-name">Rohit Menon</div><div class="trainee-info-dept">Platform Engineering</div></div></div></td>
+            <td><span class="batch-code-pill">B50-A-2</span></td><td>Phase 3</td><td class="mono">74%</td><td class="skill-score">81</td>
+            <td><span class="badge green"><span class="dot"></span>On track</span></td>
+          </tr>
+          <tr class="trainee-row" data-batch="B50" data-group="A" data-sub="1" data-phase="Phase 3" data-risk="ok" onclick="openTrainee('priya')">
+            <td><div class="trainee-name-cell"><div class="avatar">PN</div><div><div class="trainee-info-name">Priya Nair</div><div class="trainee-info-dept">Analytics Engineering</div></div></div></td>
+            <td><span class="batch-code-pill">B50-A-1</span></td><td>Phase 3</td><td class="mono">91%</td><td class="skill-score">94</td>
+            <td><span class="badge green"><span class="dot"></span>On track</span></td>
+          </tr>
+          <tr class="trainee-row" data-batch="B49" data-group="B" data-sub="4" data-phase="Phase 3" data-risk="risk" onclick="openTrainee('daniel')">
+            <td><div class="trainee-name-cell"><div class="avatar">DC</div><div><div class="trainee-info-name">Daniel Cho</div><div class="trainee-info-dept">Platform Engineering</div></div></div></td>
+            <td><span class="batch-code-pill">B49-B-4</span></td><td>Phase 3</td><td class="mono">38%</td><td class="skill-score">52</td>
+            <td><span class="badge red"><span class="dot"></span>Falling behind</span></td>
+          </tr>
+          <tr class="trainee-row" data-batch="B50" data-group="C" data-sub="1" data-phase="Phase 2" data-risk="risk" onclick="openTrainee('fatima')">
+            <td><div class="trainee-name-cell"><div class="avatar">FA</div><div><div class="trainee-info-name">Fatima Al-Sayed</div><div class="trainee-info-dept">Data Platform</div></div></div></td>
+            <td><span class="batch-code-pill">B50-C-1</span></td><td>Phase 2</td><td class="mono">63%</td><td class="skill-score">76</td>
+            <td><span class="badge amber"><span class="dot"></span>At risk</span></td>
+          </tr>
+          <tr class="trainee-row" data-batch="B49" data-group="A" data-sub="5" data-phase="Phase 4" data-risk="ok" onclick="openTrainee('sana')">
+            <td><div class="trainee-name-cell"><div class="avatar">SK</div><div><div class="trainee-info-name">Sana Khatri</div><div class="trainee-info-dept">Analytics Engineering</div></div></div></td>
+            <td><span class="batch-code-pill">B49-A-5</span></td><td>Phase 4</td><td class="mono">96%</td><td class="skill-score">97</td>
+            <td><span class="badge violet"><span class="dot"></span>Capstone review</span></td>
+          </tr>
+        </table>
+        <div id="noResultsMsg" style="display:none;padding:32px;text-align:center;color:var(--text-tertiary);font-size:13px;">No trainees match this filter.</div>
+      </div>
+    </div>
+
+    <!-- ============ ASSIGNMENTS VIEW ============ -->
+    <div class="view" id="view-assignments">
+      <div class="page-head">
+        <div>
+          <div class="page-title" id="assignmentsPageTitle">Assignments</div>
+          <div class="page-sub" id="assignmentsPageSub">Track lab exercises and project sprints across batches</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg> New Assignment</button>
+      </div>
+
+      <div class="subtab-bar">
+        <div class="subtab-btn active" id="tabBtnAssignments" onclick="switchAssignmentsTab('assignments')">Assignments</div>
+        <div class="subtab-btn" id="tabBtnAssessments" onclick="switchAssignmentsTab('assessments')">Assessments</div>
+      </div>
+
+      <div id="assignmentsSubview">
+        <div class="kanban">
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">Draft</span><span class="kanban-count">2</span></div>
+            <div class="kanban-card" onclick="openAssignment('delta-draft')"><div class="kanban-card-title">Delta Lake Time Travel Exercise</div><div class="kanban-card-tags"><span class="tag">Databricks</span><span class="tag">Phase 3</span></div><div class="kanban-card-foot"><span>Not scheduled</span></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">Published</span><span class="kanban-count">3</span></div>
+            <div class="kanban-card" onclick="openAssignment('airflow-dag')"><div class="kanban-card-title">Airflow DAG Dependency Design</div><div class="kanban-card-tags"><span class="tag">Airflow</span><span class="tag">B50</span></div><div class="kanban-card-foot"><span>Due Aug 8</span><div class="mini-avatars"><div class="mini-avatar"></div><div class="mini-avatar"></div><div class="mini-avatar"></div></div></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">In Progress</span><span class="kanban-count">6</span></div>
+            <div class="kanban-card" onclick="openAssignment('kafka-routing')"><div class="kanban-card-title">Kafka Event Routing Challenge</div><div class="kanban-card-tags"><span class="tag">Kafka</span><span class="tag">Phase 3</span></div><div class="kanban-card-foot"><span>Due Aug 10</span><div class="mini-avatars"><div class="mini-avatar"></div><div class="mini-avatar"></div></div></div></div>
+            <div class="kanban-card" onclick="openAssignment('dbt-lineage')"><div class="kanban-card-title">DBT Lineage Builder Sprint</div><div class="kanban-card-tags"><span class="tag">DBT</span><span class="tag">B49</span></div><div class="kanban-card-foot"><span>Due Aug 6</span><div class="mini-avatars"><div class="mini-avatar"></div></div></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">Under Review</span><span class="kanban-count">2</span></div>
+            <div class="kanban-card" onclick="openAssignment('spark-opt')"><div class="kanban-card-title">Spark Optimization Challenge</div><div class="kanban-card-tags"><span class="tag">PySpark</span><span class="tag">Manual</span></div><div class="kanban-card-foot"><span>Submitted Aug 1</span></div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-head"><span class="kanban-col-title">Completed</span><span class="kanban-count">18</span></div>
+            <div class="kanban-card" onclick="openAssignment('warehouse-model')"><div class="kanban-card-title">Warehouse Modeling Studio</div><div class="kanban-card-tags"><span class="tag">Modeling</span><span class="tag">Avg 89</span></div><div class="kanban-card-foot"><span>Closed Jul 28</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="assessmentsSubview" style="display:none;">
+        <div class="card" style="padding:0;">
+          <table>
+            <tr><th>Assessment</th><th>Type</th><th>Batch</th><th>Avg. score</th><th>Pass rate</th><th>Status</th></tr>
+            <tr class="trainee-row" onclick="openAssessment('sql-foundations')"><td>SQL Fundamentals Assessment</td><td><span class="badge blue"><span class="dot"></span>SQL challenge</span></td><td class="mono">B50</td><td class="mono">86</td><td class="mono">92%</td><td><span class="badge green"><span class="dot"></span>Closed</span></td></tr>
+            <tr class="trainee-row" onclick="openAssessment('pyspark-coding')"><td>PySpark Coding Assessment</td><td><span class="badge violet"><span class="dot"></span>Coding assessment</span></td><td class="mono">B50</td><td class="mono">74</td><td class="mono">68%</td><td><span class="badge blue"><span class="dot"></span>Open</span></td></tr>
+            <tr class="trainee-row" onclick="openAssessment('kafka-case')"><td>Kafka Architecture Case Study</td><td><span class="badge amber"><span class="dot"></span>Case study</span></td><td class="mono">B49</td><td class="mono">61</td><td class="mono">54%</td><td><span class="badge blue"><span class="dot"></span>Open</span></td></tr>
+            <tr class="trainee-row" onclick="openAssessment('airflow-debug')"><td>Airflow Debugging Exercise</td><td><span class="badge red"><span class="dot"></span>Debugging</span></td><td class="mono">B49</td><td class="mono">79</td><td class="mono">88%</td><td><span class="badge green"><span class="dot"></span>Closed</span></td></tr>
+            <tr class="trainee-row" onclick="openAssessment('capstone-design')"><td>Capstone Design Review</td><td><span class="badge gray"><span class="dot"></span>Scenario-based</span></td><td class="mono">B49</td><td class="mono">91</td><td class="mono">96%</td><td><span class="badge violet"><span class="dot"></span>In review</span></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CONTENT SERVICE VIEW ============ -->
+    <div class="view" id="view-content-service">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Content Service</div>
+          <div class="page-sub">Learning content library — Data Engineering topics, explained as What / Why / How</div>
+        </div>
+        <button class="btn" onclick="showToast('Draft new topic (demo only)')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> Add Topic</button>
+      </div>
+
+      <div class="cs-layout">
+        <div class="cs-sidebar" id="csSidebar"></div>
+        <div class="cs-doc-card" id="csDocPanel"></div>
+        <div class="cs-toc" id="csToc"></div>
+      </div>
+    </div>
+
+    <!-- ============ CERTIFICATIONS VIEW ============ -->
+    <div class="view" id="view-certifications">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Certifications</div>
+          <div class="page-sub">4 pending approvals · Digital credential issuance</div>
+        </div>
+      </div>
+      <div class="card" style="padding:0;">
+        <table>
+          <tr><th>Trainee</th><th>Certification</th><th>AI evaluation</th><th>Mentor review</th><th>Action</th></tr>
+          <tr><td><div class="trainee-name-cell"><div class="avatar">SK</div><div><div class="trainee-info-name">Sana Khatri</div><div class="trainee-info-dept">Capstone: Fraud Detection Pipeline</div></div></div></td><td class="mono">97/100</td><td><span class="badge green"><span class="dot"></span>Passed</span></td><td><span class="badge green"><span class="dot"></span>Excellent</span></td><td><button class="btn btn-primary" style="padding:6px 12px;font-size:12px;" onclick="approveCert(this,'Sana Khatri')">Approve</button></td></tr>
+          <tr><td><div class="trainee-name-cell"><div class="avatar">JW</div><div><div class="trainee-info-name">Jordan Wells</div><div class="trainee-info-dept">Capstone: IoT Streaming Analytics</div></div></div></td><td class="mono">84/100</td><td><span class="badge green"><span class="dot"></span>Passed</span></td><td><span class="badge blue"><span class="dot"></span>Good</span></td><td><button class="btn btn-primary" style="padding:6px 12px;font-size:12px;" onclick="approveCert(this,'Jordan Wells')">Approve</button></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ ANALYTICS VIEW ============ -->
+    <div class="view" id="view-analytics">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Performance Analytics</div>
+          <div class="page-sub">Organization-wide training metrics · Batches B47–B50</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-weight:600;font-family:'Space Grotesk';margin-bottom:16px;">Assessment Score Distribution</div>
+          <div style="display:flex;align-items:flex-end;gap:10px;height:160px;">
+            <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:30%;border-radius:6px 6px 0 0;"></div>
+            <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:55%;border-radius:6px 6px 0 0;"></div>
+            <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:85%;border-radius:6px 6px 0 0;"></div>
+            <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:100%;border-radius:6px 6px 0 0;"></div>
+            <div style="flex:1;background:linear-gradient(180deg,var(--accent-amber),transparent);height:62%;border-radius:6px 6px 0 0;"></div>
+            <div style="flex:1;background:linear-gradient(180deg,var(--accent-flow),transparent);height:40%;border-radius:6px 6px 0 0;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10.5px;color:var(--text-tertiary);">
+            <span>&lt;60</span><span>60-70</span><span>70-80</span><span>80-90</span><span>90-95</span><span>95+</span>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-weight:600;font-family:'Space Grotesk';margin-bottom:16px;">Certification Completion by Department</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Platform Engineering</span><span class="mono">78%</span></div><div class="progress-track"><div class="progress-fill" style="width:78%"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Analytics Engineering</span><span class="mono">91%</span></div><div class="progress-track"><div class="progress-fill" style="width:91%"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span>Data Platform</span><span class="mono">64%</span></div><div class="progress-track"><div class="progress-fill amber" style="width:64%"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-weight:600;font-family:'Space Grotesk';">Organization Skill Heatmap</div>
+          <div style="font-size:11.5px;color:var(--text-tertiary);">Average proficiency (0–100) by cohort</div>
+        </div>
+        <div class="heatmap">
+          <div></div>
+          <div class="heatmap-col-label">SQL</div><div class="heatmap-col-label">Spark</div><div class="heatmap-col-label">Kafka</div><div class="heatmap-col-label">Airflow</div><div class="heatmap-col-label">DBT</div><div class="heatmap-col-label">Cloud</div>
+
+          <div class="heatmap-label">Batch B47</div>
+          <div class="heat-cell" style="background:#2E8B57" onmouseenter="showHeatTip(event,'Batch B47','SQL',92)" onmouseleave="hideHeatTip()">92</div><div class="heat-cell" style="background:#2E8B57" onmouseenter="showHeatTip(event,'Batch B47','Spark',88)" onmouseleave="hideHeatTip()">88</div><div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B47','Kafka',81)" onmouseleave="hideHeatTip()">81</div><div class="heat-cell" style="background:#2E8B57" onmouseenter="showHeatTip(event,'Batch B47','Airflow',90)" onmouseleave="hideHeatTip()">90</div><div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B47','DBT',83)" onmouseleave="hideHeatTip()">83</div><div class="heat-cell" style="background:#2E8B57" onmouseenter="showHeatTip(event,'Batch B47','Cloud',86)" onmouseleave="hideHeatTip()">86</div>
+
+          <div class="heatmap-label">Batch B48</div>
+          <div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B48','SQL',85)" onmouseleave="hideHeatTip()">85</div><div class="heat-cell" style="background:#C98A2E" onmouseenter="showHeatTip(event,'Batch B48','Spark',68)" onmouseleave="hideHeatTip()">68</div><div class="heat-cell" style="background:#C9682E" onmouseenter="showHeatTip(event,'Batch B48','Kafka',58)" onmouseleave="hideHeatTip()">58</div><div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B48','Airflow',79)" onmouseleave="hideHeatTip()">79</div><div class="heat-cell" style="background:#C98A2E" onmouseenter="showHeatTip(event,'Batch B48','DBT',65)" onmouseleave="hideHeatTip()">65</div><div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B48','Cloud',80)" onmouseleave="hideHeatTip()">80</div>
+
+          <div class="heatmap-label">Batch B49</div>
+          <div class="heat-cell" style="background:#2E8B57" onmouseenter="showHeatTip(event,'Batch B49','SQL',90)" onmouseleave="hideHeatTip()">90</div><div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B49','Spark',77)" onmouseleave="hideHeatTip()">77</div><div class="heat-cell" style="background:#C98A2E" onmouseenter="showHeatTip(event,'Batch B49','Kafka',61)" onmouseleave="hideHeatTip()">61</div><div class="heat-cell" style="background:#2E8B57" onmouseenter="showHeatTip(event,'Batch B49','Airflow',85)" onmouseleave="hideHeatTip()">85</div><div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B49','DBT',74)" onmouseleave="hideHeatTip()">74</div><div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B49','Cloud',78)" onmouseleave="hideHeatTip()">78</div>
+
+          <div class="heatmap-label">Batch B50 (current)</div>
+          <div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B50','SQL',81)" onmouseleave="hideHeatTip()">81</div><div class="heat-cell" style="background:#C98A2E" onmouseenter="showHeatTip(event,'Batch B50','Spark',63)" onmouseleave="hideHeatTip()">63</div><div class="heat-cell" style="background:#C9412E" onmouseenter="showHeatTip(event,'Batch B50','Kafka',41)" onmouseleave="hideHeatTip()">41</div><div class="heat-cell" style="background:#C98A2E" onmouseenter="showHeatTip(event,'Batch B50','Airflow',67)" onmouseleave="hideHeatTip()">67</div><div class="heat-cell" style="background:#C98A2E" onmouseenter="showHeatTip(event,'Batch B50','DBT',59)" onmouseleave="hideHeatTip()">59</div><div class="heat-cell" style="background:#3a9d63" onmouseenter="showHeatTip(event,'Batch B50','Cloud',75)" onmouseleave="hideHeatTip()">75</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TRAINEE DETAIL MODAL -->
+<div class="modal-overlay detail-modal" id="traineeModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Trainee Profile</div>
+      <div class="modal-close" onclick="closeDetailModal('traineeModalOverlay')">&times;</div>
+    </div>
+    <div class="modal-body" id="traineeModalBody"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeDetailModal('traineeModalOverlay'); showToast('Message sent to trainee')">Send message</button>
+      <button class="btn btn-primary" onclick="closeDetailModal('traineeModalOverlay'); openModal()">Assign new task</button>
+    </div>
+  </div>
+</div>
+
+<!-- ASSIGNMENT DETAIL MODAL -->
+<div class="modal-overlay detail-modal" id="assignmentModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Assignment Detail</div>
+      <div class="modal-close" onclick="closeDetailModal('assignmentModalOverlay')">&times;</div>
+    </div>
+    <div class="modal-body" id="assignmentModalBody"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeDetailModal('assignmentModalOverlay')">Close</button>
+      <button class="btn btn-primary" onclick="closeDetailModal('assignmentModalOverlay'); showToast('Reminder sent to assigned trainees')">Send reminder</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK ADD MODAL -->
+<div class="modal-overlay" id="quickModalOverlay">
+  <div class="modal" style="width:440px;">
+    <div class="modal-head">
+      <div class="modal-title" id="quickModalTitle">Add</div>
+      <div class="modal-close" onclick="closeDetailModal('quickModalOverlay')">&times;</div>
+    </div>
+    <div class="modal-body" id="quickModalBody"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeDetailModal('quickModalOverlay')">Cancel</button>
+      <button class="btn btn-primary" id="quickModalSaveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ASSIGNMENT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">New Assignment</div>
+      <div class="modal-close" onclick="closeModal()">&times;</div>
+    </div>
+    <div class="modal-body">
+      <div class="step-indicator"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot"></div></div>
+      <div class="form-group"><label class="form-label">Assignment title</label><input class="form-input" value="Kafka Event Routing Challenge" /></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea">Configure producers and consumers to correctly route events across three topics under simulated production load.</textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Type</label><select class="form-select"><option>Lab Exercise</option><option>Coding Assessment</option><option>Project Sprint</option><option>Capstone Milestone</option></select></div>
+        <div class="form-group"><label class="form-label">Curriculum phase</label><select class="form-select"><option>Phase 3 — Distributed Systems</option><option>Phase 2 — Warehousing &amp; ETL</option><option>Phase 4 — Enterprise Project</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Assign to</label><div class="pill-select"><div class="pill-option selected">B50</div><div class="pill-option">B49</div><div class="pill-option">Individual trainee</div><div class="pill-option">Entire org</div></div></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Due date</label><input class="form-input" value="Aug 10, 2026" /></div>
+        <div class="form-group"><label class="form-label">Evaluation mode</label><select class="form-select"><option>AI auto-grading</option><option>Mentor review</option><option>Hybrid</option></select></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Save as draft</button>
+      <button class="btn btn-primary" onclick="closeModal()">Publish assignment</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="dot"></span><span id="toastText"></span></div>
+
+<!-- HEATMAP TOOLTIP -->
+<div class="heat-tooltip" id="heatTooltip"></div>
+
+<script>
+/* ---------- NAVIGATION ---------- */
+function goTo(view){
+  document.querySelectorAll('.nav-item[data-view]').forEach(i=>i.classList.remove('active'));
+  const navItem=document.querySelector('.nav-item[data-view="'+view+'"]');
+  if(navItem) navItem.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const target=document.getElementById('view-'+view);
+  if(target) target.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- CONTENT SERVICE DROPDOWN ---------- */
+const csNavItem=document.getElementById('csNavItem');
+const csDropdown=document.getElementById('csDropdown');
+function toggleContentServiceDropdown(e){
+  e.stopPropagation();
+  closeTopbarDropdowns();
+  const willOpen=!csDropdown.classList.contains('open');
+  if(willOpen){
+    const rect=csNavItem.getBoundingClientRect();
+    csDropdown.style.top=(rect.bottom+10)+'px';
+    csDropdown.style.left=rect.left+'px';
+  }
+  csDropdown.classList.toggle('open');
+  csNavItem.classList.toggle('dropdown-open');
+}
+csDropdown.addEventListener('click',e=>e.stopPropagation());
+document.addEventListener('click',()=>{
+  csDropdown.classList.remove('open');
+  csNavItem.classList.remove('dropdown-open');
+});
+
+/* ---------- CONTENT SERVICE DOC DATA ---------- */
+const contentCategories=[
+  {id:'processing',label:'Processing & Storage',topics:['pyspark','delta']},
+  {id:'streaming',label:'Streaming & Orchestration',topics:['kafka','airflow']},
+  {id:'modeling',label:'Transformation & Modeling',topics:['dbt','warehousing']}
+];
+const contentTopics={
+  'ai-de':{
+    name:'AI vs Data Engineering', tag:'Start here — the core distinction', icon:'★', color:'#9D7BFF', colorDim:'rgba(157,123,255,0.15)', priority:true,
+    what:'Artificial Intelligence is the discipline of building models that learn patterns and generate predictions or content — think an LLM writing code or a model predicting churn. Data Engineering is the discipline of building the pipelines, storage, and infrastructure that reliably move and prepare the data those models (and every dashboard, report, and business process) depend on. AI produces answers; data engineering makes sure the inputs to those answers are correct, complete, and on time.',
+    why:'Trainees increasingly use AI copilots to write PySpark or SQL, which can blur the line between "the AI wrote correct code" and "I understand why this pipeline is correct." This org needs engineers who can validate, debug, and own a pipeline — not just prompt a model and ship what it returns. Knowing where AI assistance ends and data engineering judgment begins is what separates a production-ready hire from one who can only work with a copilot looking over their shoulder.',
+    how:[
+      {title:'Where AI genuinely helps in this role',lang:'text',code:`- Drafting boilerplate PySpark/SQL from a plain-language description
+- Explaining an unfamiliar stack trace or Airflow failure
+- Suggesting a first-pass schema or DAG structure to refine
+- Reviewing a diff for obvious bugs before it reaches a human reviewer`},
+      {title:'Where data engineering judgment is still required',lang:'text',code:`- Deciding partitioning strategy for a specific data volume and query pattern
+- Knowing when a job is "correct but wasteful" vs "correct and efficient"
+- Reasoning about failure modes: late-arriving data, schema drift, replay safety
+- Owning the tradeoff between pipeline cost, latency, and data freshness`},
+      {title:'A useful mental model',lang:'text',code:`AI copilot  -> accelerates writing the code
+Data engineer -> decides what the code should do, and verifies it did it
+
+If a trainee can't explain "why" a generated pipeline is correct,
+they aren't ready to ship it to production.`}
+    ],
+    compare:[
+      {id:'pyspark',note:'PySpark is a tool an AI copilot can help you write — this topic is about the judgment you still need to apply on top of it.'},
+      {id:'airflow',note:'Airflow orchestration decisions (retries, scheduling, dependencies) are a good example of judgment AI can suggest but shouldn\'t decide alone.'}
+    ]
+  },
+  pyspark:{
+    name:'PySpark', tag:'Distributed data processing', icon:'PY', color:'#F0A94E', colorDim:'rgba(240,169,78,0.15)', category:'processing',
+    what:'PySpark is the Python API for Apache Spark. It lets you process and transform large datasets across a distributed cluster using the DataFrame and RDD abstractions, instead of running everything on a single machine.',
+    why:'Most enterprise ETL and analytics pipelines at this scale run on Spark. Trainees need to understand partitioning, lazy evaluation, and DataFrame transformations, because inefficient Spark code is one of the most common causes of slow or failing production jobs.',
+    how:[
+      {title:'Read a dataset into a DataFrame',lang:'python',code:`from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("SalesETL").getOrCreate()
+
+df = spark.read.format("parquet").load("s3://raw/sales/2026/")
+df.printSchema()`},
+      {title:'Transform and aggregate',lang:'python',code:`from pyspark.sql import functions as F
+
+result = (
+    df.filter(F.col("status") == "completed")
+      .groupBy("region", "product_category")
+      .agg(F.sum("amount").alias("total_revenue"))
+      .orderBy(F.desc("total_revenue"))
+)`},
+      {title:'Write output partitioned by region',lang:'python',code:`result.write.mode("overwrite") \\
+    .partitionBy("region") \\
+    .parquet("s3://curated/sales_summary/")`}
+    ],
+    compare:[
+      {id:'delta',note:'Delta Lake sits on top of the files PySpark writes — use it when you need ACID guarantees or time travel on those outputs.'},
+      {id:'kafka',note:'Kafka moves data in real time between systems; PySpark processes data in batch (or micro-batch) once it has landed.'}
+    ]
+  },
+  kafka:{
+    name:'Kafka', tag:'Event streaming & topics', icon:'KF', color:'#F0556B', colorDim:'rgba(240,85,107,0.15)', category:'streaming',
+    what:'Kafka is a distributed event streaming platform. Producers publish events to topics, and consumers subscribe to those topics to process events in real time, with partitions handling scale and ordering.',
+    why:'Enterprise pipelines rely on Kafka to decouple systems and move events reliably at scale. Trainees must understand topic partitioning, consumer groups, and delivery guarantees before touching production streams — a misconfigured consumer group can silently drop or duplicate events.',
+    how:[
+      {title:'Produce events to a topic',lang:'python',code:`from kafka import KafkaProducer
+import json
+
+producer = KafkaProducer(
+    bootstrap_servers=["broker1:9092"],
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+)
+
+producer.send("orders.events", {"order_id": 1042, "status": "created"})
+producer.flush()`},
+      {title:'Consume events from a topic',lang:'python',code:`from kafka import KafkaConsumer
+import json
+
+consumer = KafkaConsumer(
+    "orders.events",
+    bootstrap_servers=["broker1:9092"],
+    group_id="fraud-detection-service",
+    value_deserializer=lambda v: json.loads(v.decode("utf-8"))
+)
+
+for message in consumer:
+    process_order_event(message.value)`},
+      {title:'Create a topic (CLI)',lang:'bash',code:`kafka-topics.sh --create \\
+  --topic orders.events \\
+  --partitions 6 \\
+  --replication-factor 3 \\
+  --bootstrap-server broker1:9092`}
+    ],
+    compare:[
+      {id:'airflow',note:'Kafka moves events continuously and in real time; Airflow triggers and orchestrates scheduled or interval-based batch jobs.'},
+      {id:'pyspark',note:'A Kafka consumer often hands events off to a PySpark structured streaming job for transformation at scale.'}
+    ]
+  },
+  airflow:{
+    name:'Airflow', tag:'DAG-based orchestration', icon:'AF', color:'#3B82F6', colorDim:'rgba(59,130,246,0.15)', category:'streaming',
+    what:'Apache Airflow orchestrates data pipelines as Directed Acyclic Graphs (DAGs) — sets of tasks with defined dependencies — and handles scheduling, retries, and monitoring of those tasks.',
+    why:'Production pipelines rarely run as a single script. Airflow gives trainees the pattern every pipeline in this org relies on: expressing task dependencies explicitly, failing safely with retries, and getting alerted before a stakeholder notices missing data.',
+    how:[
+      {title:'Define a DAG with task dependencies',lang:'python',code:`from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime
+
+with DAG(
+    dag_id="daily_sales_pipeline",
+    schedule="0 4 * * *",
+    start_date=datetime(2026, 1, 1),
+    catchup=False,
+) as dag:
+
+    extract = PythonOperator(task_id="extract_sales", python_callable=extract_sales)
+    transform = PythonOperator(task_id="transform_sales", python_callable=transform_sales)
+    load = PythonOperator(task_id="load_warehouse", python_callable=load_warehouse)
+
+    extract >> transform >> load`},
+      {title:'Add retries and failure alerting',lang:'python',code:`from datetime import timedelta
+
+default_args = {
+    "retries": 3,
+    "retry_delay": timedelta(minutes=5),
+    "on_failure_callback": notify_slack_channel,
+}`}
+    ],
+    compare:[
+      {id:'kafka',note:'Airflow schedules and orchestrates discrete jobs; Kafka streams continuous events between systems in real time.'},
+      {id:'dbt',note:'Airflow often triggers a dbt run as one task in a larger DAG — orchestration vs. the transformation itself.'}
+    ]
+  },
+  dbt:{
+    name:'DBT', tag:'SQL transformation models', icon:'DBT', color:'#3ECF8E', colorDim:'rgba(62,207,142,0.15)', category:'modeling',
+    what:'dbt (data build tool) lets data engineers define transformations as version-controlled SQL models, with built-in testing, documentation, and lineage tracking between models.',
+    why:'dbt is how this org manages the transformation layer of the warehouse. Trainees need to understand model layering — staging, intermediate, marts — and how to write tests that catch bad data before it reaches a dashboard, not after.',
+    how:[
+      {title:'Define a staging model',lang:'sql',code:`-- models/staging/stg_orders.sql
+select
+    order_id,
+    customer_id,
+    status,
+    cast(amount as numeric(10,2)) as amount,
+    created_at
+from {{ source('raw', 'orders') }}
+where status is not null`},
+      {title:'Build a mart model referencing staging',lang:'sql',code:`-- models/marts/fct_daily_revenue.sql
+select
+    date_trunc('day', created_at) as order_date,
+    sum(amount) as total_revenue,
+    count(distinct order_id) as order_count
+from {{ ref('stg_orders') }}
+group by 1`},
+      {title:'Add a schema test',lang:'yaml',code:`models:
+  - name: stg_orders
+    columns:
+      - name: order_id
+        tests: [unique, not_null]`}
+    ],
+    compare:[
+      {id:'warehousing',note:'Data warehousing is the schema you\'re designing toward; dbt is the tool that builds and tests the models that populate it.'},
+      {id:'airflow',note:'dbt defines what a transformation does; Airflow usually decides when and in what order it runs.'}
+    ]
+  },
+  delta:{
+    name:'Delta Lake', tag:'ACID tables & time travel', icon:'DL', color:'#9D7BFF', colorDim:'rgba(157,123,255,0.15)', category:'processing',
+    what:'Delta Lake adds ACID transactions, schema enforcement, and time travel to data lake storage, sitting on top of Parquet files that Spark already reads and writes.',
+    why:'Trainees need Delta Lake to safely handle concurrent writes and to recover or audit a previous version of a table without rebuilding a pipeline from scratch — critical when a bad job overwrites production data.',
+    how:[
+      {title:'Write and read a Delta table',lang:'python',code:`df.write.format("delta").mode("overwrite").save("/lake/sales_delta")
+
+df2 = spark.read.format("delta").load("/lake/sales_delta")`},
+      {title:'Time travel to a previous version',lang:'python',code:`df_yesterday = spark.read.format("delta") \\
+    .option("versionAsOf", 12) \\
+    .load("/lake/sales_delta")`}
+    ],
+    compare:[
+      {id:'pyspark',note:'Delta Lake is a storage format PySpark reads and writes — it adds safety guarantees on top of a normal Spark job.'},
+      {id:'warehousing',note:'Delta Lake protects the lake layer; a warehouse schema is the modeled, query-optimized layer usually built on top of it.'}
+    ]
+  },
+  warehousing:{
+    name:'Data Warehousing', tag:'Star & snowflake schemas', icon:'DW', color:'#06B6D4', colorDim:'rgba(6,182,212,0.15)', category:'modeling',
+    what:'Data warehousing covers designing schemas — star and snowflake — that organize data into fact and dimension tables optimized for analytical queries rather than transactional ones.',
+    why:'Every downstream dashboard and report depends on a warehouse schema modeled correctly. Trainees who get this wrong create slow queries and inconsistent metrics across the org — this is usually the first thing a data quality incident traces back to.',
+    how:[
+      {title:'Define a star schema fact table',lang:'sql',code:`create table fct_sales (
+    sale_id       bigint primary key,
+    date_key      int references dim_date(date_key),
+    customer_key  int references dim_customer(customer_key),
+    product_key   int references dim_product(product_key),
+    amount        numeric(10,2),
+    quantity      int
+);`}
+    ],
+    compare:[
+      {id:'dbt',note:'The warehouse schema is the target design; dbt models are the SQL that actually builds and tests it.'},
+      {id:'delta',note:'Delta Lake protects your raw/lake layer; warehousing is about modeling the cleaned layer for fast analytical queries.'}
+    ]
+  }
+};
+
+function renderSidebar(activeId){
+  const sidebar=document.getElementById('csSidebar');
+  const priority=contentTopics['ai-de'];
+  let html=`<div class="cs-priority-item ${activeId==='ai-de'?'active':''}" onclick="openContentTopic('ai-de')">
+    <div class="cs-topic-icon" style="background:${priority.colorDim};color:${priority.color};">${priority.icon}</div>
+    <div><div class="cs-topic-name">${priority.name}</div><span class="cs-priority-badge">Priority</span></div>
+  </div>`;
+  contentCategories.forEach(cat=>{
+    html+=`<div class="cs-cat-label">${cat.label}</div>`;
+    cat.topics.forEach(id=>{
+      const t=contentTopics[id];
+      html+=`<div class="cs-topic-item ${id===activeId?'active':''}" onclick="openContentTopic('${id}')">
+        <div class="cs-topic-icon" style="background:${t.colorDim};color:${t.color};">${t.icon}</div>
+        <div class="cs-topic-name">${t.name}</div>
+      </div>`;
+    });
+  });
+  sidebar.innerHTML=html;
+}
+
+function openContentTopic(id){
+  const t=contentTopics[id];
+  if(!t) return;
+  goTo('content-service');
+  renderContentDoc(id);
+}
+function renderContentDoc(id){
+  const t=contentTopics[id];
+  if(!t) return;
+  renderSidebar(id);
+  const panel=document.getElementById('csDocPanel');
+  panel.innerHTML=`
+    <div class="cs-breadcrumb"><a onclick="goTo('content-service')">Content Service</a> <span>/</span> <span>${t.priority?'Start Here':contentCategories.find(c=>c.topics.includes(id)).label}</span> <span>/</span> <span style="color:var(--text-secondary);">${t.name}</span></div>
+    <div class="cs-doc-head">
+      <div class="cs-doc-icon" style="background:${t.colorDim};color:${t.color};">${t.icon}</div>
+      <div>
+        <div class="cs-doc-title">${t.name}</div>
+        <div class="cs-doc-subtitle">${t.tag}</div>
+      </div>
+    </div>
+    <div class="cs-doc-divider"></div>
+
+    <div class="cs-section-label what" id="sec-what"><span class="qmark">W</span>What</div>
+    <div class="cs-body-text">${t.what}</div>
+
+    <div class="cs-section-label why" id="sec-why"><span class="qmark">?</span>Why</div>
+    <div class="cs-body-text">${t.why}</div>
+
+    <div class="cs-section-label how" id="sec-how"><span class="qmark">H</span>How</div>
+    ${t.how.map(step=>`
+      <div class="cs-how-step">
+        <div class="cs-how-step-title">${step.title}</div>
+        <div class="code-block">
+          <div class="code-block-head">
+            <span class="code-block-lang">${step.lang}</span>
+            <div class="code-block-dots"><span></span><span></span><span></span></div>
+          </div>
+          <pre><code>${escapeHtml(step.code)}</code></pre>
+        </div>
+      </div>`).join('')}
+
+    ${t.compare?`
+    <div class="cs-section-label" id="sec-compare" style="color:var(--text-secondary);"><span class="qmark" style="background:var(--bg-surface);color:var(--text-tertiary);">≈</span>Compare with related topics</div>
+    <div class="cs-compare-grid">
+      ${t.compare.map(c=>{
+        const ct=contentTopics[c.id];
+        return `<div class="cs-compare-card" onclick="openContentTopic('${c.id}')">
+          <div class="cs-compare-card-head">
+            <div class="cs-compare-card-icon" style="background:${ct.colorDim};color:${ct.color};">${ct.icon}</div>
+            <div class="cs-compare-card-name">${ct.name}</div>
+          </div>
+          <div class="cs-compare-card-note">${c.note}</div>
+        </div>`;
+      }).join('')}
+    </div>` : ''}
+  `;
+
+  const toc=document.getElementById('csToc');
+  let tocHtml=`<div class="cs-toc-label">On this page</div>
+    <div class="cs-toc-link" onclick="scrollToSection('sec-what')">What</div>
+    <div class="cs-toc-link" onclick="scrollToSection('sec-why')">Why</div>
+    <div class="cs-toc-link" onclick="scrollToSection('sec-how')">How</div>`;
+  if(t.compare) tocHtml+=`<div class="cs-toc-link" onclick="scrollToSection('sec-compare')">Compare</div>`;
+  toc.innerHTML=tocHtml;
+}
+function scrollToSection(sectionId){
+  const el=document.getElementById(sectionId);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+
+/* ---------- ASSIGNMENTS / ASSESSMENTS SUBTABS ---------- */
+function switchAssignmentsTab(tab){
+  document.getElementById('tabBtnAssignments').classList.toggle('active',tab==='assignments');
+  document.getElementById('tabBtnAssessments').classList.toggle('active',tab==='assessments');
+  document.getElementById('assignmentsSubview').style.display=tab==='assignments'?'':'none';
+  document.getElementById('assessmentsSubview').style.display=tab==='assessments'?'':'none';
+  document.getElementById('assignmentsPageTitle').textContent=tab==='assignments'?'Assignments':'Assessments';
+  document.getElementById('assignmentsPageSub').textContent=tab==='assignments'
+    ? 'Track lab exercises and project sprints across batches'
+    : 'Coding assessments, case studies, and scenario-based evaluations';
+}
+
+const assessmentData={
+  'sql-foundations':{title:'SQL Fundamentals Assessment',type:'SQL challenge',batch:'B50',avg:86,pass:'92%',status:'Closed',statusColor:'green',desc:'Multi-part SQL challenge covering joins, window functions, and query optimization on a simulated retail dataset.'},
+  'pyspark-coding':{title:'PySpark Coding Assessment',type:'Coding assessment',batch:'B50',avg:74,pass:'68%',status:'Open',statusColor:'blue',desc:'Trainees submit a PySpark script that transforms and aggregates a skewed dataset; graded on correctness and job efficiency.'},
+  'kafka-case':{title:'Kafka Architecture Case Study',type:'Case study',batch:'B49',avg:61,pass:'54%',status:'Open',statusColor:'blue',desc:'Written case study: design a topic and partition strategy for a given event volume and consumer group layout.'},
+  'airflow-debug':{title:'Airflow Debugging Exercise',type:'Debugging',batch:'B49',avg:79,pass:'88%',status:'Closed',statusColor:'green',desc:'Trainees are given a broken DAG and must identify and fix dependency, scheduling, and retry issues.'},
+  'capstone-design':{title:'Capstone Design Review',type:'Scenario-based',batch:'B49',avg:91,pass:'96%',status:'In review',statusColor:'violet',desc:'Panel-style review of each trainee\'s end-to-end capstone architecture before final sign-off.'}
+};
+function openAssessment(id){
+  const a=assessmentData[id];
+  if(!a) return;
+  const body=document.getElementById('assignmentModalBody');
+  body.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+      <div class="detail-name" style="font-size:17px;">${a.title}</div>
+      <span class="badge ${a.statusColor}"><span class="dot"></span>${a.status}</span>
+    </div>
+    <div class="kanban-card-tags" style="margin-bottom:14px;"><span class="tag">${a.type}</span><span class="tag">${a.batch}</span></div>
+    <div class="detail-section-title">Description</div>
+    <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.6;">${a.desc}</div>
+    <div class="detail-stats" style="margin-top:16px;">
+      <div class="detail-stat"><div class="detail-stat-label">Avg. score</div><div class="detail-stat-value">${a.avg}</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Pass rate</div><div class="detail-stat-value">${a.pass}</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Batch</div><div class="detail-stat-value" style="font-size:14px;">${a.batch}</div></div>
+    </div>`;
+  document.getElementById('assignmentModalOverlay').classList.add('active');
+}
+
+/* ---------- TOAST ---------- */
+let toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastText').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+/* ---------- MODALS ---------- */
+function openModal(){document.getElementById('modalOverlay').classList.add('active');}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('active');}
+document.getElementById('openCreateBtn').addEventListener('click',openModal);
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target.id==='modalOverlay')closeModal();});
+function closeDetailModal(id){document.getElementById(id).classList.remove('active');}
+document.getElementById('traineeModalOverlay').addEventListener('click',e=>{if(e.target.id==='traineeModalOverlay')closeDetailModal('traineeModalOverlay');});
+document.getElementById('assignmentModalOverlay').addEventListener('click',e=>{if(e.target.id==='assignmentModalOverlay')closeDetailModal('assignmentModalOverlay');});
+document.getElementById('quickModalOverlay').addEventListener('click',e=>{if(e.target.id==='quickModalOverlay')closeDetailModal('quickModalOverlay');});
+
+/* ---------- TRAINEE FILTERS (batch dropdowns + quick chips) ---------- */
+let activeChip='All';
+function filterChip(label){
+  activeChip=label;
+  document.querySelectorAll('#view-trainees .chip').forEach(c=>{c.classList.toggle('active',c.textContent.trim()===(label==='All'?'All trainees':label));});
+  applyBatchFilter();
+}
+function applyBatchFilter(){
+  const batch=document.getElementById('batchSelect').value;
+  const group=document.getElementById('groupSelect').value;
+  const sub=document.getElementById('subSelect').value;
+  const rows=document.querySelectorAll('#traineeTable tr.trainee-row');
+  let visibleCount=0;
+  rows.forEach(row=>{
+    let show=true;
+    if(batch!=='all') show=show && row.dataset.batch===batch;
+    if(group!=='all') show=show && row.dataset.group===group;
+    if(sub!=='all') show=show && row.dataset.sub===sub;
+    if(activeChip==='At risk only') show=show && row.dataset.risk==='risk';
+    else if(activeChip==='Phase 3') show=show && row.dataset.phase==='Phase 3';
+    row.style.display=show?'':'none';
+    if(show) visibleCount++;
+  });
+  document.getElementById('noResultsMsg').style.display=visibleCount===0?'block':'none';
+}
+
+/* ---------- TRAINEE DETAIL MODAL ---------- */
+const traineeData={
+  rohit:{name:'Rohit Menon',initials:'RM',dept:'Platform Engineering',batch:'B50-A-2',phase:'Phase 3',completion:'74%',score:81,status:'On track',skills:[['PySpark',78],['Kafka',65],['Airflow',72],['SQL',88]]},
+  priya:{name:'Priya Nair',initials:'PN',dept:'Analytics Engineering',batch:'B50-A-2',phase:'Phase 3',completion:'91%',score:94,status:'On track',skills:[['PySpark',92],['Kafka',85],['Airflow',95],['SQL',97]]},
+  daniel:{name:'Daniel Cho',initials:'DC',dept:'Platform Engineering',batch:'B49-B-4',phase:'Phase 3',completion:'38%',score:52,status:'Falling behind',skills:[['PySpark',48],['Kafka',31],['Airflow',44],['SQL',66]]},
+  fatima:{name:'Fatima Al-Sayed',initials:'FA',dept:'Data Platform',batch:'B50-A-2',phase:'Phase 2',completion:'63%',score:76,status:'At risk',skills:[['PySpark',70],['Kafka',58],['Airflow',68],['SQL',84]]},
+  sana:{name:'Sana Khatri',initials:'SK',dept:'Analytics Engineering',batch:'B49-B-4',phase:'Phase 4',completion:'96%',score:97,status:'Capstone review',skills:[['PySpark',98],['Kafka',94],['Airflow',96],['SQL',99]]}
+};
+function openTrainee(id){
+  const t=traineeData[id];
+  if(!t) return;
+  const body=document.getElementById('traineeModalBody');
+  body.innerHTML=`
+    <div class="detail-head-row">
+      <div class="avatar detail-avatar">${t.initials}</div>
+      <div>
+        <div class="detail-name">${t.name}</div>
+        <div class="detail-sub">${t.dept} · ${t.cohort} · ${t.phase}</div>
+      </div>
+    </div>
+    <div class="detail-stats">
+      <div class="detail-stat"><div class="detail-stat-label">Completion</div><div class="detail-stat-value">${t.completion}</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Skill score</div><div class="detail-stat-value">${t.score}</div></div>
+      <div class="detail-stat"><div class="detail-stat-label">Status</div><div class="detail-stat-value" style="font-size:12.5px;">${t.status}</div></div>
+    </div>
+    <div class="detail-section-title">Skill breakdown</div>
+    ${t.skills.map(s=>`
+      <div class="skill-bar-row">
+        <div class="skill-bar-label">${s[0]}</div>
+        <div class="progress-track" style="flex:1;"><div class="progress-fill${s[1]<60?' amber':''}" style="width:${s[1]}%"></div></div>
+        <div class="skill-bar-value">${s[1]}</div>
+      </div>`).join('')}
+    <div class="detail-section-title">Recent activity</div>
+    <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.9;">
+      • Submitted last assignment 2 days ago<br>
+      • Last mentor session: 5 days ago<br>
+      • Lab environment last active: today
+    </div>`;
+  document.getElementById('traineeModalOverlay').classList.add('active');
+}
+
+/* ---------- ASSIGNMENT DETAIL MODAL ---------- */
+const assignmentData={
+  'delta-draft':{title:'Delta Lake Time Travel Exercise',status:'Draft',statusColor:'gray',tags:['Databricks','Phase 3'],due:'Not scheduled',desc:'Explore Delta Lake time travel and versioned reads/writes on a simulated retail dataset.',submissions:'0 of 0 (not yet published)'},
+  'airflow-dag':{title:'Airflow DAG Dependency Design',status:'Published',statusColor:'blue',tags:['Airflow','B50'],due:'Aug 8, 2026',desc:'Design a multi-stage DAG with correct upstream/downstream dependencies and retry policies.',submissions:'6 of 34 trainees submitted'},
+  'kafka-routing':{title:'Kafka Event Routing Challenge',status:'In Progress',statusColor:'blue',tags:['Kafka','Phase 3'],due:'Aug 10, 2026',desc:'Configure producers and consumers to correctly route events across three topics under simulated load.',submissions:'12 of 34 trainees submitted'},
+  'dbt-lineage':{title:'DBT Lineage Builder Sprint',status:'In Progress',statusColor:'blue',tags:['DBT','B49'],due:'Aug 6, 2026',desc:'Build a chain of DBT models with correct lineage, tests, and documentation.',submissions:'19 of 28 trainees submitted'},
+  'spark-opt':{title:'Spark Optimization Challenge',status:'Under Review',statusColor:'amber',tags:['PySpark','AI-graded'],due:'Submitted Aug 1, 2026',desc:'Reduce job runtime on a skewed dataset using partitioning and broadcast join strategies.',submissions:'28 of 28 trainees submitted — AI grading in progress'},
+  'warehouse-model':{title:'Warehouse Modeling Studio',status:'Completed',statusColor:'green',tags:['Modeling','Avg 89'],due:'Closed Jul 28, 2026',desc:'Design a star schema for a retail sales warehouse, including SCD Type 2 handling.',submissions:'41 of 41 trainees submitted — avg score 89'}
+};
+function openAssignment(id){
+  const a=assignmentData[id];
+  if(!a) return;
+  const body=document.getElementById('assignmentModalBody');
+  body.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+      <div class="detail-name" style="font-size:17px;">${a.title}</div>
+      <span class="badge ${a.statusColor}"><span class="dot"></span>${a.status}</span>
+    </div>
+    <div class="kanban-card-tags" style="margin-bottom:14px;">${a.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    <div class="detail-section-title">Description</div>
+    <div style="font-size:12.5px;color:var(--text-secondary);line-height:1.6;">${a.desc}</div>
+    <div class="detail-section-title">Due</div>
+    <div style="font-size:12.5px;color:var(--text-secondary);">${a.due}</div>
+    <div class="detail-section-title">Submissions</div>
+    <div style="font-size:12.5px;color:var(--text-secondary);">${a.submissions}</div>`;
+  document.getElementById('assignmentModalOverlay').classList.add('active');
+}
+
+/* ---------- CERTIFICATION APPROVE ---------- */
+function approveCert(btn,name){
+  const cell=btn.parentElement;
+  cell.innerHTML='<span class="badge green"><span class="dot"></span>Approved</span>';
+  showToast(name+"'s certification approved and credential issued");
+  const navBadge=document.querySelector('.nav-item[data-view="certifications"] .nav-badge');
+  if(navBadge){
+    const n=parseInt(navBadge.textContent)-1;
+    if(n>0){navBadge.textContent=n;} else {navBadge.remove();}
+  }
+}
+
+/* ---------- HEATMAP TOOLTIP ---------- */
+function showHeatTip(e,cohort,skill,value){
+  const tip=document.getElementById('heatTooltip');
+  tip.innerHTML=`<b>${cohort}</b> — ${skill}: <span class="mono">${value}%</span>`;
+  const rect=e.target.getBoundingClientRect();
+  tip.style.left=(rect.left+rect.width/2-60)+'px';
+  tip.style.top=(rect.top-38)+'px';
+  tip.classList.add('show');
+}
+function hideHeatTip(){document.getElementById('heatTooltip').classList.remove('show');}
+
+/* ---------- QUICK ADD MODAL ---------- */
+function openQuickModal(type){
+  const title=document.getElementById('quickModalTitle');
+  const body=document.getElementById('quickModalBody');
+  const saveBtn=document.getElementById('quickModalSaveBtn');
+  let html='',label='',toastMsg='';
+  if(type==='trainee'){
+    label='Add Trainee';
+    html=`
+      <div class="form-group"><label class="form-label">Full name</label><input class="form-input" placeholder="e.g. Wei Zhang"/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Department</label><select class="form-select"><option>Platform Engineering</option><option>Analytics Engineering</option><option>Data Platform</option></select></div>
+        <div class="form-group"><label class="form-label">Batch</label><select class="form-select"><option>B50</option><option>B49</option></select></div><div class="form-group"><label class="form-label">Group</label><select class="form-select"><option>A</option><option>B</option><option>C</option><option>D</option></select></div><div class="form-group"><label class="form-label">Sub-batch</label><select class="form-select"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+      </div>`;
+    toastMsg='Trainee added and onboarding email sent';
+  }
+  title.textContent=label;
+  body.innerHTML=html;
+  saveBtn.onclick=()=>{closeDetailModal('quickModalOverlay');showToast(toastMsg);};
+  document.getElementById('quickModalOverlay').classList.add('active');
+}
+
+/* ---------- TOPBAR DROPDOWNS ---------- */
+const notifBtn=document.getElementById('notifBtn');
+const notifDropdown=document.getElementById('notifDropdown');
+const profileBtn=document.getElementById('profileBtn');
+const profileDropdown=document.getElementById('profileDropdown');
+const notifDot=document.getElementById('notifDot');
+function closeTopbarDropdowns(){notifDropdown.classList.remove('open');profileDropdown.classList.remove('open');}
+function toggleDropdown(dd){
+  const wasOpen=dd.classList.contains('open');
+  closeTopbarDropdowns();
+  csDropdown.classList.remove('open');csNavItem.classList.remove('dropdown-open');
+  if(!wasOpen) dd.classList.add('open');
+}
+notifBtn.addEventListener('click',e=>{e.stopPropagation();toggleDropdown(notifDropdown);});
+profileBtn.addEventListener('click',e=>{e.stopPropagation();toggleDropdown(profileDropdown);});
+document.getElementById('markReadBtn').addEventListener('click',e=>{
+  e.stopPropagation();
+  notifDot.style.display='none';
+  document.querySelectorAll('#notifDropdown .notif-dot').forEach(d=>d.style.opacity='0.35');
+});
+document.addEventListener('click',()=>{closeTopbarDropdowns();});
+notifDropdown.addEventListener('click',e=>e.stopPropagation());
+profileDropdown.addEventListener('click',e=>e.stopPropagation());
+function closeDropdowns(){closeTopbarDropdowns();}
+
+/* ---------- INIT ---------- */
+renderContentDoc('pyspark');
+</script>
+
+</body>
+</html>

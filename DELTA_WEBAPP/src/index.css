@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+:root {
+  --bg-deep: #080C14;
+  --bg-surface: #0D1525;
+  --bg-glass: rgba(22,28,40,0.6);
+  --bg-glass-hover: rgba(28,35,50,0.8);
+  --border: #212A3A;
+  --border-soft: #1A2230;
+  --text-primary: #E2E8F0;
+  --text-secondary: #8891A5;
+  --text-tertiary: #64748B;
+  --accent-flow: #3B82F6;
+  --accent-flow-dim: rgba(59,130,246,0.15);
+  --accent-amber: #F0A94E;
+  --accent-amber-dim: rgba(240,169,78,0.15);
+  --accent-green: #3ECF8E;
+  --accent-green-dim: rgba(62,207,142,0.15);
+  --accent-red: #F0556B;
+  --accent-red-dim: rgba(240,85,107,0.15);
+  --accent-violet: #9D7BFF;
+  --accent-violet-dim: rgba(157,123,255,0.15);
+  --accent-cyan: #06B6D4;
+  --accent-cyan-dim: rgba(6,182,212,0.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(59,130,246,0.06), transparent 40%),
+    radial-gradient(circle at 85% 100%, rgba(157,123,255,0.05), transparent 40%);
+  background-attachment: fixed;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
